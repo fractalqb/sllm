@@ -66,3 +66,24 @@ func TestExpand_unterminated2(t *testing.T) {
 		t.Fatal("received wrong error:", err)
 	}
 }
+
+func BenchmarkPrintf(b *testing.B) {
+	var out bytes.Buffer
+	for i := 0; i < b.N; i++ {
+		out.Reset()
+		fmt.Fprintf(&out, "just an `what:%s`: `miss:%s`",
+			"example",
+			"<undef>")
+	}
+}
+
+func BenchmarkExpand(b *testing.B) {
+	var out bytes.Buffer
+	for i := 0; i < b.N; i++ {
+		out.Reset()
+		ExpandArgs(&out,
+			"just an `what:%s`: `miss:%s`", nil,
+			"example",
+			"<undef>")
+	}
+}

@@ -41,9 +41,9 @@ type SyntaxError struct {
 	Err  string
 }
 
-func (e SyntaxError) Error() string {
+func (err SyntaxError) Error() string {
 	var sb bytes.Buffer
-	ExpandArgs(&sb, "syntax error in `tmpl`:`pos`:`desc`", nil, e.Tmpl, e.Pos, e.Err)
+	ExpandArgs(&sb, "syntax error in `tmpl`:`pos`:`desc`", nil, err.Tmpl, err.Pos, err.Err)
 	return sb.String()
 }
 
@@ -105,54 +105,85 @@ func Expand(
 	return nil
 }
 
-type ArgIndexError struct {
+type IllegalArgIndex struct {
 	Tmpl string
 	Pos  int
 }
 
-func (iior ArgIndexError) Error() string {
+func (err IllegalArgIndex) Error() string {
 	var sb bytes.Buffer
-	ExpandArgs(&sb, "argument index 'idx' out of range in template `tmpl`", nil, iior.Pos, iior.Tmpl)
+	ExpandArgs(&sb, "argument index 'idx' out of range in template `tmpl`", nil, err.Pos, err.Tmpl)
 	return sb.String()
 }
 
-func ExpandArgs(wr io.Writer, tmpl string, undef []byte, argv ...interface{}) (err error) {
+func ExpandArgs(
+	wr io.Writer,
+	tmpl string,
+	undef []byte,
+	argv ...interface{},
+) (err error) {
 	return Expand(wr, tmpl, func(wr io.Writer, idx int, name string) error {
 		if idx < 0 || idx >= len(argv) {
 			if undef == nil {
-				return ArgIndexError{tmpl, idx}
+				return IllegalArgIndex{tmpl, idx}
 			} else {
 				_, err = wr.Write(undef)
 			}
 		} else {
-			_, err = fmt.Fprint(wr, argv[idx])
+			_, err = writeVal(wr, argv[idx])
 		}
 		return err
 	})
 }
 
-type UndefArgError struct {
+type UndefinedArg struct {
 	Tmpl string
 	Arg  string
 }
 
-func (ua UndefArgError) Error() string {
+func (err UndefinedArg) Error() string {
 	var sb bytes.Buffer
-	ExpandArgs(&sb, "undefined argument for `arg` in template `tmpl`", nil, ua.Arg, ua.Tmpl)
+	ExpandArgs(&sb, "undefined argument for `arg` in template `tmpl`", nil, err.Arg, err.Tmpl)
 	return sb.String()
 }
 
-func ExpandMap(wr io.Writer, tmpl string, undef []byte, args map[string]interface{}) (err error) {
+func ExpandMap(
+	wr io.Writer,
+	tmpl string,
+	undef []byte,
+	args map[string]interface{},
+) (err error) {
 	return Expand(wr, tmpl, func(wr io.Writer, idx int, name string) error {
 		if val, ok := args[name]; !ok {
 			if undef == nil {
-				return UndefArgError{tmpl, name}
+				return UndefinedArg{tmpl, name}
 			} else {
 				_, err = wr.Write(undef)
 			}
 		} else {
-			_, err = fmt.Fprint(wr, val)
+			_, err = writeVal(wr, val)
 		}
 		return err
 	})
 }
+
+// func ExpandData(
+// 	wr io.Writer,
+// 	tmpl string,
+// 	undef []byte,
+// 	args interface{},
+// ) (err error) {
+// 	switch reflect.TypeOf(args).Kind() {
+// 	case reflect.Struct:
+// 	case reflect.Slice:
+// 	case reflect.Map:
+// 	case reflect.Array:
+// 	default:
+// 	}
+
+// 	// return Expand(wr, tmpl, func(wr io.Writer, idx int, name string) error {
+
+// 	// })
+// }
+
+var writeVal = fmt.Fprint

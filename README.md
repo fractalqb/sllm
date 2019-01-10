@@ -1,8 +1,9 @@
-# sllm
-**Structured Logging Leightweight Markup**
+# sllm – Structured Logging Leightweight Markup
 
 A human readable approach to make parameters from an actual log message
 recognizable for machines.
+
+(Pronounce it like “slim”)
 
 ## Rationale
 Let's take the example of a standard log message that states some
@@ -27,10 +28,14 @@ MDC.clear();
 …
 ```
 
-How would the output of such a scenario look like? – Note that *sllm*
-focuses on the log message.  We do not propose how to handle other
-pieces of information! So lets have a look what sllm would do with
-some decent log formats.
+How would the output of such a scenario look like? – Either one gets
+a visually pleasant message that is rather good to read or you get
+output that is easy to be consumed by computers. Currently one has
+to make a choice. But, can't we have both in one?
+
+*Note* that `sllm` focuses on the log message.  We do not propose how
+to handle other pieces of information! So lets have a look what sllm
+would do with some decent log formats.
 
 ### Classic log output
 
@@ -42,14 +47,17 @@ This message is nice to read for humans. Especially the message part
 is easy to understand because humans are used to gain some
 understanding from natural language. However, the relevant parameters—
 i.e. the number of items, which type of item and the respective
-user—is not easy to extract from the text by machines. And simple
-changes of the text templat can easily break the mechanism to extract
-those parameters.
+user—is not easy to extract from the text by machines. Even if you do,
+simple changes of the text template can easily break the mechanism to
+extrac those parameters.
 
 **With sllm message**
 ```
 2018-07-02 20:52:39 [main] INFO sllm.Example - added `count:7` x `item:Hat` to shopping cart by `user:John Doe` - tx.id=4711
 ```
+
+The sllm'ed format is still quite readable but lets one reliably identify the
+business relevant values.
 
 ### logfmt
 ```
