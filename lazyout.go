@@ -33,3 +33,28 @@ func (msg argsMsg) String() string {
 	ExpandArgs(&buf, msg.Tmpl, msg.Undef, msg.Args...) // TODO error
 	return buf.String()
 }
+
+type mapMsg struct {
+	message
+	Map ArgMap
+}
+
+func Map(tmpl string, args ArgMap) mapMsg {
+	return mapMsg{
+		message: message{Tmpl: tmpl},
+		Map:     args,
+	}
+}
+
+func UMap(tmpl string, undef []byte, args ArgMap) mapMsg {
+	return mapMsg{
+		message: message{Tmpl: tmpl, Undef: undef},
+		Map:     args,
+	}
+}
+
+func (msg mapMsg) String() string {
+	var buf bytes.Buffer
+	ExpandMap(&buf, msg.Tmpl, msg.Undef, msg.Map) // TODO error
+	return buf.String()
+}

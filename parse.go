@@ -2,10 +2,43 @@ package sllm
 
 import (
 	"bytes"
+	"strings"
 )
 
 func Parse(msg string, onArg func(name, value string) error) error {
-	// TODO
+	for len(msg) > 0 {
+		idx := strings.IndexByte(msg, tmplEsc)
+		if idx < 0 {
+			return nil
+		}
+		msg = msg[idx+1:]
+		idx = strings.IndexByte(msg, nmSep)
+		if idx < 0 {
+			return nil
+		}
+		name := msg[:idx]
+		msg = msg[idx+1:]
+		idx = strings.IndexByte(msg, tmplEsc)
+		for {
+			if idx < 0 {
+				return nil
+			}
+			if idx+1 >= len(msg) || msg[idx+1] != tmplEsc {
+				break
+			}
+			nidx := strings.IndexByte(msg[idx+2:], tmplEsc)
+			if nidx < 0 {
+				return nil
+			}
+			idx += nidx + 2
+		}
+		value := msg[:idx]
+		err := onArg(name, value)
+		if err != nil {
+			return err
+		}
+		msg = msg[idx+1:]
+	}
 	return nil
 }
 

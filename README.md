@@ -1,4 +1,7 @@
 # sllm – Structured Logging Leightweight Markup
+[![Test Coverage](https://img.shields.io/badge/coverage-73%25-orange.svg)](file:coverage.html)
+[![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/sllm)](https://goreportcard.com/report/github.com/fractalqb/sllm)
+[![GoDoc](https://godoc.org/github.com/fractalqb/sllm?status.svg)](https://godoc.org/github.com/fractalqb/sllm)
 
 A human readable approach to make parameters from an actual log message
 recognizable for machines.

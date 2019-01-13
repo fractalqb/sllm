@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"reflect"
 	"testing"
@@ -86,4 +87,20 @@ func BenchmarkExpand(b *testing.B) {
 			"example",
 			"<undef>")
 	}
+}
+
+func ExampleForDocGo() {
+	const (
+		count = 7
+		item  = "Hat"
+		user  = "John Doe"
+	)
+	logr := log.New(os.Stdout, "", log.LstdFlags)
+	logr.Printf("added %d ⨉ %s to shopping cart by %s", count, item, user)
+	logr.Print(Map("added `count` ⨉ `item` to shopping cart by `user`",
+		ArgMap{
+			"count": count,
+			"item":  item,
+			"user":  user,
+		}))
 }

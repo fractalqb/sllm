@@ -147,12 +147,9 @@ func (err UndefinedArg) Error() string {
 	return sb.String()
 }
 
-func ExpandMap(
-	wr io.Writer,
-	tmpl string,
-	undef []byte,
-	args map[string]interface{},
-) (err error) {
+type ArgMap = map[string]interface{}
+
+func ExpandMap(wr io.Writer, tmpl string, undef []byte, args ArgMap) (err error) {
 	return Expand(wr, tmpl, func(wr io.Writer, idx int, name string) error {
 		if val, ok := args[name]; !ok {
 			if undef == nil {

@@ -19,6 +19,25 @@ func ExampleUArgs() {
 	// just an `what:example`: `miss:<undef>`
 }
 
+func ExampleMap() {
+	fmt.Println(Map("just an `what`", ArgMap{
+		"what":  "example",
+		"dummy": false,
+	}))
+	// Output:
+	// just an `what:example`
+}
+
+func ExampleUMap() {
+	fmt.Println(UMap("just an `what`: `miss`", []byte("<undef>"),
+		ArgMap{
+			"what":  "example",
+			"dummy": false,
+		}))
+	// Output:
+	// just an `what:example`: `miss:<undef>`
+}
+
 func BenchmarkStdLog(b *testing.B) {
 	var out bytes.Buffer
 	logr := log.New(&out, "stdlog", log.LstdFlags)
