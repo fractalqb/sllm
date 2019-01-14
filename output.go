@@ -76,6 +76,9 @@ func Expand(
 					return SyntaxError{tmpl, i, "unterminated argument"}
 				}
 				name = name[:nmLen]
+				if strings.IndexByte(name, nmSep) >= 0 {
+					return SyntaxError{tmpl, i, fmt.Sprintf("name contains '%c'", nmSep)}
+				}
 				_, err = wr.Write([]byte(name))
 				if err != nil {
 					return err

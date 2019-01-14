@@ -68,6 +68,19 @@ func TestExpand_unterminated2(t *testing.T) {
 	}
 }
 
+func TestExpand_name_with_colon(t *testing.T) {
+	var out bytes.Buffer
+	err := Expand(&out, "foo `ba:r` baz", nil)
+	if err == nil {
+		t.Fatal("expected Expand error, got none")
+	}
+	if se, ok := err.(SyntaxError); !ok {
+		t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
+	} else if se.Err != "name contains ':'" {
+		t.Fatal("received wrong error:", err)
+	}
+}
+
 func BenchmarkPrintf(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
