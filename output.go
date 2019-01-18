@@ -15,17 +15,20 @@ const (
 var tEsc2 = []byte{tmplEsc, tmplEsc}
 var nmSepStr = []byte{nmSep}
 
-type valEsc struct {
+type ValueEsc struct {
 	wr io.Writer
 }
 
-func (ew valEsc) Write(p []byte) (n int, err error) {
+func (ew ValueEsc) Write(p []byte) (n int, err error) {
 	var i int
+	var b1 [1]byte
+	bs := b1[:]
 	for _, b := range p {
 		if b == tmplEsc {
 			i, err = ew.wr.Write(tEsc2)
 		} else {
-			i, err = ew.wr.Write([]byte{b})
+			bs[0] = b
+			i, err = ew.wr.Write(bs)
 		}
 		if err != nil {
 			return n, err
@@ -50,8 +53,11 @@ func (err SyntaxError) Error() string {
 func Expand(
 	wr io.Writer,
 	tmpl string,
-	writeArg func(wr io.Writer, idx int, name string) error,
+	writeArg func(wr ValueEsc, idx int, name string) error,
 ) (err error) {
+	var b1 [1]byte
+	bs := b1[:]
+	valEsc := ValueEsc{wr}
 	tlen := len(tmpl)
 	idx := 0
 	for i := 0; i < tlen; i++ {
@@ -87,7 +93,7 @@ func Expand(
 				if err != nil {
 					return err
 				}
-				err := writeArg(valEsc{wr}, idx, name)
+				err := writeArg(valEsc, idx, name)
 				if err != nil {
 					return err
 				}
@@ -99,7 +105,8 @@ func Expand(
 				i += nmLen
 			}
 		} else {
-			_, err := wr.Write([]byte{b})
+			bs[0] = b
+			_, err := wr.Write(bs)
 			if err != nil {
 				return err
 			}
@@ -125,7 +132,7 @@ func ExpandArgs(
 	undef []byte,
 	argv ...interface{},
 ) (err error) {
-	return Expand(wr, tmpl, func(wr io.Writer, idx int, name string) error {
+	return Expand(wr, tmpl, func(wr ValueEsc, idx int, name string) error {
 		if idx < 0 || idx >= len(argv) {
 			if undef == nil {
 				return IllegalArgIndex{tmpl, idx}
@@ -153,7 +160,7 @@ func (err UndefinedArg) Error() string {
 type ArgMap = map[string]interface{}
 
 func ExpandMap(wr io.Writer, tmpl string, undef []byte, args ArgMap) (err error) {
-	return Expand(wr, tmpl, func(wr io.Writer, idx int, name string) error {
+	return Expand(wr, tmpl, func(wr ValueEsc, idx int, name string) error {
 		if val, ok := args[name]; !ok {
 			if undef == nil {
 				return UndefinedArg{tmpl, name}

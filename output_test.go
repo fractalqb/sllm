@@ -3,7 +3,6 @@ package sllm
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"reflect"
@@ -11,7 +10,7 @@ import (
 )
 
 func Example_valEsc_Write() {
-	ew := valEsc{os.Stdout}
+	ew := ValueEsc{os.Stdout}
 	ew.Write([]byte("foo"))
 	fmt.Fprintln(os.Stdout)
 	ew.Write([]byte("`bar`"))
@@ -24,7 +23,7 @@ func Example_valEsc_Write() {
 	// b``az
 }
 
-func writeTestArg(wr io.Writer, idx int, name string) error {
+func writeTestArg(wr ValueEsc, idx int, name string) error {
 	_, err := fmt.Fprintf(wr, "#%d/'%s'", idx, name)
 	return err
 }
@@ -91,14 +90,29 @@ func BenchmarkPrintf(b *testing.B) {
 	}
 }
 
-func BenchmarkExpand(b *testing.B) {
+func BenchmarkExpandArgs(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
 		ExpandArgs(&out,
-			"just an `what:%s`: `miss:%s`", nil,
+			"just an `what`: `miss`", nil,
 			"example",
 			"<undef>")
+	}
+}
+
+// BenchmarkExpandMap shall give an indication of the voverhad for map creation
+// compared to the ExpandArgs function.
+func BenchmarkExpandMap(b *testing.B) {
+	var out bytes.Buffer
+	for i := 0; i < b.N; i++ {
+		out.Reset()
+		ExpandMap(&out,
+			"just an `what`: `miss`", nil,
+			map[string]interface{}{
+				"what": "example",
+				"miss": "<undef>",
+			})
 	}
 }
 

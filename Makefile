@@ -6,6 +6,13 @@ README.md: README.md~
 # → https://blog.golang.org/cover
 cover: coverage.html
 
+benchmark:
+	go test -bench=.
+
+cpuprof:
+	go test -cpuprofile cpu.prof -bench BenchmarkExpandArgs
+# Read with '$ go tool pprof cpu.prof' >>> e.g. '(pprof) web'
+
 coverage.html: coverage.out
 	go tool cover -html=$< -o $@
 
