@@ -9,7 +9,11 @@ func ExampleParseMap() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(m)
-	// Output:
-	// map[count:7 item:Hat user:John Doe]
+	for k, v := range m {
+		fmt.Printf("%s:[%s]\n", k, v)
+	}
+	// Unordered output:
+	// count:[7]
+	// item:[Hat]
+	// user:[John Doe]
 }
