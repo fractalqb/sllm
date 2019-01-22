@@ -23,9 +23,9 @@ func Example_valEsc_Write() {
 	// b``az
 }
 
-func writeTestArg(wr ValueEsc, idx int, name string) error {
-	_, err := fmt.Fprintf(wr, "#%d/'%s'", idx, name)
-	return err
+func writeTestArg(wr ValueEsc, idx int, name string) (int, error) {
+	n, err := fmt.Fprintf(wr, "#%d/'%s'", idx, name)
+	return n, err
 }
 
 func ExampleExpand() {
@@ -43,7 +43,7 @@ func ExampleExpand() {
 
 func TestExpand_unterminated1(t *testing.T) {
 	var out bytes.Buffer
-	err := Expand(&out, "foo `bar without end", nil)
+	_, err := Expand(&out, "foo `bar without end", nil)
 	if err == nil {
 		t.Fatal("expected Expand error, got none")
 	}
@@ -56,7 +56,7 @@ func TestExpand_unterminated1(t *testing.T) {
 
 func TestExpand_unterminated2(t *testing.T) {
 	var out bytes.Buffer
-	err := Expand(&out, "without end `", nil)
+	_, err := Expand(&out, "without end `", nil)
 	if err == nil {
 		t.Fatal("expected Expand error, got none")
 	}
@@ -69,7 +69,7 @@ func TestExpand_unterminated2(t *testing.T) {
 
 func TestExpand_name_with_colon(t *testing.T) {
 	var out bytes.Buffer
-	err := Expand(&out, "foo `ba:r` baz", nil)
+	_, err := Expand(&out, "foo `ba:r` baz", nil)
 	if err == nil {
 		t.Fatal("expected Expand error, got none")
 	}
