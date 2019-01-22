@@ -2,6 +2,7 @@ package sllm
 
 import (
 	"bytes"
+	"io"
 )
 
 type message struct {
@@ -28,6 +29,11 @@ func UArgs(tmpl string, undef []byte, args ...interface{}) argsMsg {
 	}
 }
 
+func (msg argsMsg) WriteTo(w io.Writer) (n int64, err error) {
+	wn, err := ExpandArgs(w, msg.Tmpl, msg.Undef, msg.Args...)
+	return int64(wn), err
+}
+
 func (msg argsMsg) String() string {
 	var buf bytes.Buffer
 	ExpandArgs(&buf, msg.Tmpl, msg.Undef, msg.Args...) // TODO error
@@ -51,6 +57,11 @@ func UMap(tmpl string, undef []byte, args ArgMap) mapMsg {
 		message: message{Tmpl: tmpl, Undef: undef},
 		Map:     args,
 	}
+}
+
+func (msg mapMsg) WriteTo(w io.Writer) (n int64, err error) {
+	wn, err := ExpandMap(w, msg.Tmpl, msg.Undef, msg.Map)
+	return int64(wn), err
 }
 
 func (msg mapMsg) String() string {

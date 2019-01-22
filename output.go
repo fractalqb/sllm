@@ -53,8 +53,8 @@ func (err SyntaxError) Error() string {
 func Expand(
 	wr io.Writer,
 	tmpl string,
-	writeArg func(wr ValueEsc, idx int, name string) error,
-) (err error) {
+	writeArg func(wr ValueEsc, idx int, name string) (int, error),
+) (n int, err error) {
 	var b1 [1]byte
 	bs := b1[:]
 	valEsc := ValueEsc{wr}
@@ -62,57 +62,64 @@ func Expand(
 	idx := 0
 	for i := 0; i < tlen; i++ {
 		if b := tmpl[i]; b == tmplEsc {
-			_, err := wr.Write(tEsc2[:1])
+			wn, err := wr.Write(tEsc2[:1])
+			n += wn
 			if err != nil {
-				return err
+				return n, err
 			}
 			i++
 			switch {
 			case i >= tlen:
-				return SyntaxError{tmpl, i, "unterminated argument"}
+				return n, SyntaxError{tmpl, i, "unterminated argument"}
 			case tmpl[i] == tmplEsc:
-				_, err := wr.Write(tEsc2[:1])
+				wn, err := wr.Write(tEsc2[:1])
+				n += wn
 				if err != nil {
-					return err
+					return n, err
 				}
 			default:
 				name := tmpl[i:]
 				nmLen := strings.IndexByte(name, tmplEsc)
 				if nmLen < 0 {
-					return SyntaxError{tmpl, i, "unterminated argument"}
+					return n, SyntaxError{tmpl, i, "unterminated argument"}
 				}
 				name = name[:nmLen]
 				if strings.IndexByte(name, nmSep) >= 0 {
-					return SyntaxError{tmpl, i, fmt.Sprintf("name contains '%c'", nmSep)}
+					return n, SyntaxError{tmpl, i, fmt.Sprintf("name contains '%c'", nmSep)}
 				}
-				_, err = wr.Write([]byte(name))
+				wn, err = wr.Write([]byte(name))
+				n += wn
 				if err != nil {
-					return err
+					return n, err
 				}
-				_, err = wr.Write(nmSepStr)
+				wn, err = wr.Write(nmSepStr)
+				n += wn
 				if err != nil {
-					return err
+					return n, err
 				}
-				err := writeArg(valEsc, idx, name)
+				wn, err = writeArg(valEsc, idx, name)
+				n += wn
 				if err != nil {
-					return err
+					return n, err
 				}
-				_, err = wr.Write(tEsc2[:1])
+				wn, err = wr.Write(tEsc2[:1])
+				n += wn
 				if err != nil {
-					return err
+					return n, err
 				}
 				idx++
 				i += nmLen
 			}
 		} else {
 			bs[0] = b
-			_, err := wr.Write(bs)
+			wn, err := wr.Write(bs)
+			n += wn
 			if err != nil {
-				return err
+				return n, err
 			}
 		}
 	}
-	return nil
+	return n, nil
 }
 
 type IllegalArgIndex struct {
@@ -131,18 +138,18 @@ func ExpandArgs(
 	tmpl string,
 	undef []byte,
 	argv ...interface{},
-) (err error) {
-	return Expand(wr, tmpl, func(wr ValueEsc, idx int, name string) error {
+) (n int, err error) {
+	return Expand(wr, tmpl, func(wr ValueEsc, idx int, name string) (int, error) {
 		if idx < 0 || idx >= len(argv) {
 			if undef == nil {
-				return IllegalArgIndex{tmpl, idx}
+				return 0, IllegalArgIndex{tmpl, idx}
 			} else {
-				_, err = wr.Write(undef)
+				n, err = wr.Write(undef)
 			}
 		} else {
-			_, err = writeVal(wr, argv[idx])
+			n, err = writeVal(wr, argv[idx])
 		}
-		return err
+		return n, err
 	})
 }
 
@@ -159,18 +166,18 @@ func (err UndefinedArg) Error() string {
 
 type ArgMap = map[string]interface{}
 
-func ExpandMap(wr io.Writer, tmpl string, undef []byte, args ArgMap) (err error) {
-	return Expand(wr, tmpl, func(wr ValueEsc, idx int, name string) error {
+func ExpandMap(wr io.Writer, tmpl string, undef []byte, args ArgMap) (n int, err error) {
+	return Expand(wr, tmpl, func(wr ValueEsc, idx int, name string) (int, error) {
 		if val, ok := args[name]; !ok {
 			if undef == nil {
-				return UndefinedArg{tmpl, name}
+				return 0, UndefinedArg{tmpl, name}
 			} else {
-				_, err = wr.Write(undef)
+				n, err = wr.Write(undef)
 			}
 		} else {
-			_, err = writeVal(wr, val)
+			n, err = writeVal(wr, val)
 		}
-		return err
+		return n, err
 	})
 }
 
