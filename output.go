@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"strings"
 )
 
@@ -46,7 +47,8 @@ type SyntaxError struct {
 
 func (err SyntaxError) Error() string {
 	var sb bytes.Buffer
-	ExpandArgs(&sb, "syntax error in `tmpl`:`pos`:`desc`", nil, err.Tmpl, err.Pos, err.Err)
+	ExpandArgs(&sb, "syntax error in `tmpl`:`pos`:`desc`",
+		nil, err.Tmpl, err.Pos, err.Err)
 	return sb.String()
 }
 
@@ -87,7 +89,7 @@ func Expand(
 				if strings.IndexByte(name, nmSep) >= 0 {
 					return n, SyntaxError{tmpl, i, fmt.Sprintf("name contains '%c'", nmSep)}
 				}
-				wn, err = wr.Write([]byte(name))
+				wn, err = io.WriteString(wr, name)
 				n += wn
 				if err != nil {
 					return n, err
@@ -129,7 +131,8 @@ type IllegalArgIndex struct {
 
 func (err IllegalArgIndex) Error() string {
 	var sb bytes.Buffer
-	ExpandArgs(&sb, "argument index 'idx' out of range in template `tmpl`", nil, err.Pos, err.Tmpl)
+	ExpandArgs(&sb, "argument index 'idx' out of range in template `tmpl`",
+		nil, err.Pos, err.Tmpl)
 	return sb.String()
 }
 
@@ -160,7 +163,8 @@ type UndefinedArg struct {
 
 func (err UndefinedArg) Error() string {
 	var sb bytes.Buffer
-	ExpandArgs(&sb, "undefined argument for `arg` in template `tmpl`", nil, err.Arg, err.Tmpl)
+	ExpandArgs(&sb, "undefined argument for `arg` in template `tmpl`",
+		nil, err.Arg, err.Tmpl)
 	return sb.String()
 }
 
@@ -181,23 +185,14 @@ func ExpandMap(wr io.Writer, tmpl string, undef []byte, args ArgMap) (n int, err
 	})
 }
 
-// func ExpandData(
-// 	wr io.Writer,
-// 	tmpl string,
-// 	undef []byte,
-// 	args interface{},
-// ) (err error) {
-// 	switch reflect.TypeOf(args).Kind() {
-// 	case reflect.Struct:
-// 	case reflect.Slice:
-// 	case reflect.Map:
-// 	case reflect.Array:
-// 	default:
-// 	}
-
-// 	// return Expand(wr, tmpl, func(wr io.Writer, idx int, name string) error {
-
-// 	// })
-// }
+func ExtractParams(tmpl string) (params []string, err error) {
+	_, err = Expand(ioutil.Discard, tmpl,
+		func(wr ValueEsc, idx int, name string) (int, error) {
+			params = append(params, name)
+			return len(name), nil
+		},
+	)
+	return params, err
+}
 
 var writeVal = fmt.Fprint
