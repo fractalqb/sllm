@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - tip
+
+go_import_path: git.fractalqb.de/fractalqb/sllm
+
+install:
+  - go get -u -t
+
+script: go test -v ./...
