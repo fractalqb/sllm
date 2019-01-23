@@ -3,6 +3,9 @@ GOSRC:=$(shell find . -name '*.go')
 README.md: README.md~
 	cp $< $@
 
+README.html: README.md
+	pandoc -f gfm -t html -s -M title="sllm – README" README.md > README.html
+
 # → https://blog.golang.org/cover
 cover: coverage.html
 
