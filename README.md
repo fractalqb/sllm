@@ -1,5 +1,5 @@
 # sllm – Structured Logging Leightweight Markup
-[![Test Coverage](https://img.shields.io/badge/coverage-73%25-orange.svg)](file:coverage.html)
+[![Test Coverage](https://img.shields.io/badge/coverage-72%25-orange.svg)](file:coverage.html)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/sllm)](https://goreportcard.com/report/github.com/fractalqb/sllm)
 [![GoDoc](https://godoc.org/github.com/fractalqb/sllm?status.svg)](https://godoc.org/github.com/fractalqb/sllm)
 
