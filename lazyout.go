@@ -12,31 +12,31 @@ type message struct {
 
 type argsMsg struct {
 	message
-	Args []interface{}
+	args []interface{}
 }
 
 func Args(tmpl string, args ...interface{}) argsMsg {
 	return argsMsg{
 		message: message{Tmpl: tmpl},
-		Args:    args,
+		args:    args,
 	}
 }
 
 func UArgs(tmpl string, undef []byte, args ...interface{}) argsMsg {
 	return argsMsg{
 		message: message{Tmpl: tmpl, Undef: undef},
-		Args:    args,
+		args:    args,
 	}
 }
 
 func (msg argsMsg) WriteTo(w io.Writer) (n int64, err error) {
-	wn, err := ExpandArgs(w, msg.Tmpl, msg.Undef, msg.Args...)
+	wn, err := ExpandArgs(w, msg.Tmpl, msg.Undef, msg.args...)
 	return int64(wn), err
 }
 
 func (msg argsMsg) String() string {
 	var buf bytes.Buffer
-	ExpandArgs(&buf, msg.Tmpl, msg.Undef, msg.Args...) // TODO error
+	ExpandArgs(&buf, msg.Tmpl, msg.Undef, msg.args...) // TODO error
 	return buf.String()
 }
 
