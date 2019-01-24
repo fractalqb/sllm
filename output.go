@@ -185,14 +185,16 @@ func ExpandMap(wr io.Writer, tmpl string, undef []byte, args ArgMap) (n int, err
 	})
 }
 
-func ExtractParams(tmpl string) (params []string, err error) {
-	_, err = Expand(ioutil.Discard, tmpl,
+// ExtractParams extracs the parameter names from template tmpl and appends them
+// to appendTo.
+func ExtractParams(appendTo []string, tmpl string) ([]string, error) {
+	_, err := Expand(ioutil.Discard, tmpl,
 		func(wr ValueEsc, idx int, name string) (int, error) {
-			params = append(params, name)
+			appendTo = append(appendTo, name)
 			return len(name), nil
 		},
 	)
-	return params, err
+	return appendTo, err
 }
 
 var writeVal = fmt.Fprint
