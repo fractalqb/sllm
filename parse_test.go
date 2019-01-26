@@ -2,10 +2,12 @@ package sllm
 
 import (
 	"fmt"
+	"strings"
 )
 
 func ExampleParseMap() {
-	m, err := ParseMap("added `count:7` ⨉ `item:Hat` to shopping cart by `user:John Doe`")
+	var tmpl strings.Builder
+	m, err := ParseMap("added `count:7` ⨉ `item:Hat` to shopping cart by `user:John Doe`", &tmpl)
 	if err != nil {
 		fmt.Println(err)
 	}

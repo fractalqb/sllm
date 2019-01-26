@@ -1,5 +1,6 @@
 # sllm – Structured Logging Leightweight Markup
 [![Build Status](https://travis-ci.org/fractalqb/sllm.svg)](https://travis-ci.org/fractalqb/sllm)
+[![codecov](https://codecov.io/gh/fractalqb/sllm/branch/master/graph/badge.svg)](https://codecov.io/gh/fractalqb/sllm)
 [![Test Coverage](https://img.shields.io/badge/coverage-72%25-orange.svg)](file:coverage.html)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/sllm)](https://goreportcard.com/report/github.com/fractalqb/sllm)
 [![GoDoc](https://godoc.org/github.com/fractalqb/sllm?status.svg)](https://godoc.org/github.com/fractalqb/sllm)
@@ -7,7 +8,13 @@
 A human readable approach to make parameters from an actual log
 message recognizable for machines.
 
-(Pronounce it like “slim”) – For a Go logging lib that uses _sllm_ see
+(Pronounce it like “slim”)
+
+Disclaimer: _sllm_ is **not** a loggin library. Its a concept to make
+log messages human- and machine-readable at the same time. There are
+[some
+examples](https://godoc.org/github.com/fractalqb/sllm#pkg-examples) in
+the Go reference docs. For a Go logging lib that uses _sllm_ see
 [qbsllm](https://github.com/fractalqb/qbsllm).
 
 ## Rationale
