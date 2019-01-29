@@ -16,6 +16,7 @@ const (
 var tEsc2 = []byte{tmplEsc, tmplEsc}
 var nmSepStr = []byte{nmSep}
 
+// ValueEsc is used by Expand to escap the argument if
 type ValueEsc struct {
 	wr io.Writer
 }

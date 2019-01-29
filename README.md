@@ -8,7 +8,13 @@
 A human readable approach to make parameters from an actual log
 message recognizable for machines.
 
-(Pronounce it like “slim”) – For a Go logging lib that uses _sllm_ see
+(Pronounce it like “slim”)
+
+Disclaimer: _sllm_ is **not** a loggin library. Its a concept to make
+log messages human- and machine-readable at the same time. There are
+[some
+examples](https://godoc.org/github.com/fractalqb/sllm#pkg-examples) in
+the Go reference docs. For a Go logging lib that uses _sllm_ see
 [qbsllm](https://github.com/fractalqb/qbsllm).
 
 ## Rationale
