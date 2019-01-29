@@ -5,10 +5,13 @@ import (
 	"strings"
 )
 
-func Parse(msg string, onArg func(name, value string) error) error {
+func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string) error) error {
 	for len(msg) > 0 {
 		idx := strings.IndexByte(msg, tmplEsc)
 		if idx < 0 {
+			if tmpl != nil {
+				tmpl.WriteString(msg)
+			}
 			return nil
 		}
 		msg = msg[idx+1:]
@@ -56,9 +59,9 @@ func (err DuplicateArg) Error() string {
 	return sb.String()
 }
 
-func ParseMap(msg string) (map[string]string, error) {
+func ParseMap(msg string, tmpl *bytes.Buffer) (map[string]string, error) {
 	res := make(map[string]string)
-	err := Parse(msg, func(nm, val string) error {
+	err := Parse(msg, tmpl, func(nm, val string) error {
 		if vs, ok := res[nm]; ok {
 			return DuplicateArg{msg, nm, [2]string{vs, val}}
 		}
