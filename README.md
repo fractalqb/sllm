@@ -1,7 +1,6 @@
 # sllm – Structured Logging Leightweight Markup
 [![Build Status](https://travis-ci.org/fractalqb/sllm.svg)](https://travis-ci.org/fractalqb/sllm)
 [![codecov](https://codecov.io/gh/fractalqb/sllm/branch/master/graph/badge.svg)](https://codecov.io/gh/fractalqb/sllm)
-[![Test Coverage](https://img.shields.io/badge/coverage-72%25-orange.svg)](file:coverage.html)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/sllm)](https://goreportcard.com/report/github.com/fractalqb/sllm)
 [![GoDoc](https://godoc.org/github.com/fractalqb/sllm?status.svg)](https://godoc.org/github.com/fractalqb/sllm)
 
