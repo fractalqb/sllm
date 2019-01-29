@@ -1,20 +1,25 @@
 package sllm
 
 import (
+	"bytes"
 	"fmt"
-	"strings"
 )
 
 func ExampleParseMap() {
-	var tmpl strings.Builder
-	m, err := ParseMap("added `count:7` ⨉ `item:Hat` to shopping cart by `user:John Doe`", &tmpl)
+	var tmpl bytes.Buffer
+	m, err := ParseMap(
+		"added `count:7` ⨉ `item:Hat` to shopping cart by `user:John Doe`",
+		&tmpl,
+	)
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(tmpl.String())
 	for k, v := range m {
 		fmt.Printf("%s:[%s]\n", k, v)
 	}
 	// Unordered output:
+	// added `count` ⨉ `item` to shopping cart by `user`
 	// count:[7]
 	// item:[Hat]
 	// user:[John Doe]
