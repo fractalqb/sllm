@@ -2,6 +2,7 @@ package sllm
 
 import (
 	"bytes"
+	"io/ioutil"
 	"strings"
 )
 
@@ -61,9 +62,9 @@ type DuplicateArg struct {
 
 func (err DuplicateArg) Error() string {
 	var sb bytes.Buffer
-	ExpandArgs(&sb,
-		"duplcate `arg` with values `old` / `new` in `message`", nil,
-		err.Arg, err.Vals[0], err.Vals[1], err.Msg)
+	Expand(&sb,
+		"duplcate `arg` with values `old` / `new` in `message`",
+		Args(nil, err.Arg, err.Vals[0], err.Vals[1], err.Msg))
 	return sb.String()
 }
 
@@ -77,4 +78,16 @@ func ParseMap(msg string, tmpl *bytes.Buffer) (map[string]string, error) {
 		return nil
 	})
 	return res, err
+}
+
+// ExtractParams extracs the parameter names from template tmpl and appends them
+// to appendTo.
+func ExtractParams(appendTo []string, tmpl string) ([]string, error) {
+	_, err := Expand(ioutil.Discard, tmpl,
+		func(wr ValueEsc, idx int, name string) (int, error) {
+			appendTo = append(appendTo, name)
+			return len(name), nil
+		},
+	)
+	return appendTo, err
 }

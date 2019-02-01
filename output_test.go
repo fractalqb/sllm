@@ -3,7 +3,6 @@ package sllm
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"reflect"
 	"testing"
@@ -33,7 +32,7 @@ func ExampleExpand() {
 	fmt.Println()
 	Expand(os.Stdout, "template with backtick '``' and an `arg` here", writeTestArg)
 	fmt.Println()
-	ExpandArgs(os.Stdout, "touching args: `one``two`", []byte("–"), 4711, true)
+	Expand(os.Stdout, "touching args: `one``two`", Args([]byte("–"), 4711, true))
 	fmt.Println()
 	// Output:
 	// want `arg1:#0/'arg1'` here and `arg2:#1/'arg2'` here
@@ -101,10 +100,9 @@ func BenchmarkExpandArgs(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
-		ExpandArgs(&out,
-			"just an `what`: `miss`", nil,
-			"example",
-			"<undef>")
+		Expand(&out,
+			"just an `what`: `miss`",
+			Args(nil, "example", "<undef>"))
 	}
 }
 
@@ -114,27 +112,27 @@ func BenchmarkExpandMap(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
-		ExpandMap(&out,
-			"just an `what`: `miss`", nil,
-			map[string]interface{}{
+		Expand(&out,
+			"just an `what`: `miss`",
+			Map(nil, map[string]interface{}{
 				"what": "example",
 				"miss": "<undef>",
-			})
+			}))
 	}
 }
 
-func Example_forDocGo() {
-	const (
-		count = 7
-		item  = "Hat"
-		user  = "John Doe"
-	)
-	logr := log.New(os.Stdout, "", log.LstdFlags)
-	logr.Printf("added %d ⨉ %s to shopping cart by %s", count, item, user)
-	logr.Print(Map("added `count` ⨉ `item` to shopping cart by `user`",
-		ArgMap{
-			"count": count,
-			"item":  item,
-			"user":  user,
-		}))
-}
+// func Example_forDocGo() {
+// 	const (
+// 		count = 7
+// 		item  = "Hat"
+// 		user  = "John Doe"
+// 	)
+// 	logr := log.New(os.Stdout, "", log.LstdFlags)
+// 	logr.Printf("added %d ⨉ %s to shopping cart by %s", count, item, user)
+// 	logr.Print(Map("added `count` ⨉ `item` to shopping cart by `user`",
+// 		ArgMap{
+// 			"count": count,
+// 			"item":  item,
+// 			"user":  user,
+// 		}))
+// }

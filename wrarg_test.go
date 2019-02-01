@@ -2,25 +2,25 @@ package sllm
 
 import (
 	"bytes"
-	"fmt"
 	"log"
+	"os"
 	"testing"
 )
 
 func ExampleArgs() {
-	fmt.Println(Args("just an `what`", "example"))
+	Expand(os.Stdout, "just an `what`", Args(nil, "example"))
 	// Output:
 	// just an `what:example`
 }
 
-func ExampleUArgs() {
-	fmt.Println(UArgs("just an `what`: `miss`", []byte("<undef>"), "example"))
+func ExampleArgs_undef() {
+	Expand(os.Stdout, "just an `what`: `miss`", Args([]byte("<undef>"), "example"))
 	// Output:
 	// just an `what:example`: `miss:<undef>`
 }
 
 func ExampleMap() {
-	fmt.Println(Map("just an `what`", ArgMap{
+	Expand(os.Stdout, "just an `what`", Map(nil, ArgMap{
 		"what":  "example",
 		"dummy": false,
 	}))
@@ -28,12 +28,11 @@ func ExampleMap() {
 	// just an `what:example`
 }
 
-func ExampleUMap() {
-	fmt.Println(UMap("just an `what`: `miss`", []byte("<undef>"),
-		ArgMap{
-			"what":  "example",
-			"dummy": false,
-		}))
+func ExampleMap_undef() {
+	Expand(os.Stdout, "just an `what`: `miss`", Map([]byte("<undef>"), ArgMap{
+		"what":  "example",
+		"dummy": false,
+	}))
 	// Output:
 	// just an `what:example`: `miss:<undef>`
 }
@@ -54,6 +53,6 @@ func BenchmarkSllmLog(b *testing.B) {
 	logr := log.New(&out, "stdlog", log.LstdFlags)
 	for i := 0; i < b.N; i++ {
 		out.Reset()
-		logr.Print(UArgs("just an `what`: `miss`", []byte("<undef>"), "example"))
+		logr.Print(Expands("just an `what`: `miss`", Args([]byte("<undef>"), "example")))
 	}
 }
