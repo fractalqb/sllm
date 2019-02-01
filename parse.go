@@ -14,6 +14,9 @@ func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string) error)
 			}
 			return nil
 		}
+		if tmpl != nil {
+			tmpl.WriteString(msg[:idx])
+		}
 		msg = msg[idx+1:]
 		idx = strings.IndexByte(msg, nmSep)
 		if idx < 0 {
@@ -39,6 +42,11 @@ func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string) error)
 		err := onArg(name, value)
 		if err != nil {
 			return err
+		}
+		if tmpl != nil {
+			tmpl.WriteRune('`')
+			tmpl.WriteString(name)
+			tmpl.WriteRune('`')
 		}
 		msg = msg[idx+1:]
 	}
