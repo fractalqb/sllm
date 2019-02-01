@@ -116,7 +116,7 @@ func BenchmarkExpandMap(b *testing.B) {
 	}
 }
 
-func ExampleForDocGo() {
+func Example_forDocGo() {
 	const (
 		count = 7
 		item  = "Hat"

@@ -16,11 +16,16 @@ const (
 var tEsc2 = []byte{tmplEsc, tmplEsc}
 var nmSepStr = []byte{nmSep}
 
-// ValueEsc is used by Expand to escap the argument if
+// ValueEsc is used by Expand to escap the argument when written as value of
+// a parameter. It is assumed that a user of this package should not use this
+// type directly. However the type it will be needed if one has to provide an
+// own implemenetation of the writeArg parameter of the Expand function.
 type ValueEsc struct {
 	wr io.Writer
 }
 
+// Write escapes the content so that it can be reliably recognized in a sllm
+// message, i.e. replace a '`' with '``'.
 func (ew ValueEsc) Write(p []byte) (n int, err error) {
 	var i int
 	var b1 [1]byte
@@ -40,10 +45,15 @@ func (ew ValueEsc) Write(p []byte) (n int, err error) {
 	return n, nil
 }
 
+// SyntaxError describes errors of the sllm template syntax in a message
+// template.
 type SyntaxError struct {
+	// Tmpl is the errornous template string
 	Tmpl string
-	Pos  int
-	Err  string
+	// Pas is the byte position within the template string
+	Pos int
+	// Err is the description of the error
+	Err string
 }
 
 func (err SyntaxError) Error() string {
