@@ -41,43 +41,50 @@ func ExampleExpand() {
 	// touching args: `one:4711``two:true`
 }
 
-func TestExpand_unterminated1(t *testing.T) {
-	var out bytes.Buffer
-	_, err := Expand(&out, "foo `bar without end", nil)
-	if err == nil {
-		t.Fatal("expected Expand error, got none")
+func TestExpand_syntaxerror(t *testing.T) {
+	test := func(t *testing.T, tmpl, emsg string) {
+		var out bytes.Buffer
+		_, err := Expand(&out, tmpl, nil)
+		if err == nil {
+			t.Fatal("expected Expand error, got none")
+		}
+		if se, ok := err.(SyntaxError); !ok {
+			t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
+		} else if se.Err != emsg {
+			t.Fatal("received wrong error:", err)
+		}
 	}
-	if se, ok := err.(SyntaxError); !ok {
-		t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
-	} else if se.Err != "unterminated argument" {
-		t.Fatal("received wrong error:", err)
-	}
+	t.Run("unterminated mid", func(t *testing.T) {
+		test(t, "foo `bar without end", "unterminated argument")
+	})
+	t.Run("unterminated end", func(t *testing.T) {
+		test(t, "without end `", "unterminated argument")
+	})
+	t.Run("name with colon", func(t *testing.T) {
+		test(t, "foo `ba:r` baz", "name contains ':'")
+	})
 }
 
-func TestExpand_unterminated2(t *testing.T) {
-	var out bytes.Buffer
-	_, err := Expand(&out, "without end `", nil)
-	if err == nil {
-		t.Fatal("expected Expand error, got none")
+func TestExtractParams(t *testing.T) {
+	ptest := func(t *testing.T, msg string, expect ...string) {
+		ps, err := ExtractParams(nil, msg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(ps, expect) {
+			t.Fatal("wrong params:", ps)
+		}
 	}
-	if se, ok := err.(SyntaxError); !ok {
-		t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
-	} else if se.Err != "unterminated argument" {
-		t.Fatal("received wrong error:", err)
-	}
-}
+	t.Run("single param", func(t *testing.T) {
+		ptest(t, "`foo`", "foo")
+	})
+	t.Run("one param mid", func(t *testing.T) {
+		ptest(t, "foo `bar`baz", "bar")
+	})
+	t.Run("two params", func(t *testing.T) {
+		ptest(t, "this is `foo` and `bar`", "foo", "bar")
+	})
 
-func TestExpand_name_with_colon(t *testing.T) {
-	var out bytes.Buffer
-	_, err := Expand(&out, "foo `ba:r` baz", nil)
-	if err == nil {
-		t.Fatal("expected Expand error, got none")
-	}
-	if se, ok := err.(SyntaxError); !ok {
-		t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
-	} else if se.Err != "name contains ':'" {
-		t.Fatal("received wrong error:", err)
-	}
 }
 
 func BenchmarkPrintf(b *testing.B) {
