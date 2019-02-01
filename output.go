@@ -63,10 +63,12 @@ func (err SyntaxError) Error() string {
 	return sb.String()
 }
 
+type ParamWriter = func(wr ValueEsc, idx int, name string) (int, error)
+
 func Expand(
 	wr io.Writer,
 	tmpl string,
-	writeArg func(wr ValueEsc, idx int, name string) (int, error),
+	writeArg ParamWriter,
 ) (n int, err error) {
 	var b1 [1]byte
 	bs := b1[:]
