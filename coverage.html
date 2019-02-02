@@ -56,9 +56,9 @@
 				
 				<option value="file0">git.fractalqb.de/fractalqb/sllm/lazyout.go (71.4%)</option>
 				
-				<option value="file1">git.fractalqb.de/fractalqb/sllm/output.go (73.9%)</option>
+				<option value="file1">git.fractalqb.de/fractalqb/sllm/output.go (78.4%)</option>
 				
-				<option value="file2">git.fractalqb.de/fractalqb/sllm/parse.go (66.7%)</option>
+				<option value="file2">git.fractalqb.de/fractalqb/sllm/parse.go (68.2%)</option>
 				
 				</select>
 			</div>
@@ -86,31 +86,31 @@ type message struct {
 
 type argsMsg struct {
         message
-        Args []interface{}
+        args []interface{}
 }
 
 func Args(tmpl string, args ...interface{}) argsMsg <span class="cov8" title="1">{
         return argsMsg{
                 message: message{Tmpl: tmpl},
-                Args:    args,
+                args:    args,
         }
 }</span>
 
 func UArgs(tmpl string, undef []byte, args ...interface{}) argsMsg <span class="cov8" title="1">{
         return argsMsg{
                 message: message{Tmpl: tmpl, Undef: undef},
-                Args:    args,
+                args:    args,
         }
 }</span>
 
 func (msg argsMsg) WriteTo(w io.Writer) (n int64, err error) <span class="cov0" title="0">{
-        wn, err := ExpandArgs(w, msg.Tmpl, msg.Undef, msg.Args...)
+        wn, err := ExpandArgs(w, msg.Tmpl, msg.Undef, msg.args...)
         return int64(wn), err
 }</span>
 
 func (msg argsMsg) String() string <span class="cov8" title="1">{
         var buf bytes.Buffer
-        ExpandArgs(&amp;buf, msg.Tmpl, msg.Undef, msg.Args...) // TODO error
+        ExpandArgs(&amp;buf, msg.Tmpl, msg.Undef, msg.args...) // TODO error
         return buf.String()
 }</span>
 
@@ -163,10 +163,16 @@ const (
 var tEsc2 = []byte{tmplEsc, tmplEsc}
 var nmSepStr = []byte{nmSep}
 
+// ValueEsc is used by Expand to escap the argument when written as value of
+// a parameter. It is assumed that a user of this package should not use this
+// type directly. However the type it will be needed if one has to provide an
+// own implemenetation of the writeArg parameter of the Expand function.
 type ValueEsc struct {
         wr io.Writer
 }
 
+// Write escapes the content so that it can be reliably recognized in a sllm
+// message, i.e. replace a '`' with '``'.
 func (ew ValueEsc) Write(p []byte) (n int, err error) <span class="cov8" title="1">{
         var i int
         var b1 [1]byte
@@ -186,10 +192,15 @@ func (ew ValueEsc) Write(p []byte) (n int, err error) <span class="cov8" title="
         <span class="cov8" title="1">return n, nil</span>
 }
 
+// SyntaxError describes errors of the sllm template syntax in a message
+// template.
 type SyntaxError struct {
+        // Tmpl is the errornous template string
         Tmpl string
-        Pos  int
-        Err  string
+        // Pas is the byte position within the template string
+        Pos int
+        // Err is the description of the error
+        Err string
 }
 
 func (err SyntaxError) Error() string <span class="cov0" title="0">{
@@ -332,14 +343,16 @@ func ExpandMap(wr io.Writer, tmpl string, undef []byte, args ArgMap) (n int, err
         })
 }
 
-func ExtractParams(tmpl string) (params []string, err error) <span class="cov0" title="0">{
-        _, err = Expand(ioutil.Discard, tmpl,
-                func(wr ValueEsc, idx int, name string) (int, error) </span><span class="cov0" title="0">{
-                        params = append(params, name)
+// ExtractParams extracs the parameter names from template tmpl and appends them
+// to appendTo.
+func ExtractParams(appendTo []string, tmpl string) ([]string, error) <span class="cov8" title="1">{
+        _, err := Expand(ioutil.Discard, tmpl,
+                func(wr ValueEsc, idx int, name string) (int, error) </span><span class="cov8" title="1">{
+                        appendTo = append(appendTo, name)
                         return len(name), nil
                 }</span>,
         )
-        <span class="cov0" title="0">return params, err</span>
+        <span class="cov8" title="1">return appendTo, err</span>
 }
 
 var writeVal = fmt.Fprint
@@ -352,11 +365,17 @@ import (
         "strings"
 )
 
-func Parse(msg string, onArg func(name, value string) error) error <span class="cov8" title="1">{
+func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string) error) error <span class="cov8" title="1">{
         for len(msg) &gt; 0 </span><span class="cov8" title="1">{
                 idx := strings.IndexByte(msg, tmplEsc)
                 if idx &lt; 0 </span><span class="cov0" title="0">{
-                        return nil
+                        if tmpl != nil </span><span class="cov0" title="0">{
+                                tmpl.WriteString(msg)
+                        }</span>
+                        <span class="cov0" title="0">return nil</span>
+                }
+                <span class="cov8" title="1">if tmpl != nil </span><span class="cov8" title="1">{
+                        tmpl.WriteString(msg[:idx])
                 }</span>
                 <span class="cov8" title="1">msg = msg[idx+1:]
                 idx = strings.IndexByte(msg, nmSep)
@@ -384,6 +403,11 @@ func Parse(msg string, onArg func(name, value string) error) error <span class="
                 if err != nil </span><span class="cov0" title="0">{
                         return err
                 }</span>
+                <span class="cov8" title="1">if tmpl != nil </span><span class="cov8" title="1">{
+                        tmpl.WriteRune('`')
+                        tmpl.WriteString(name)
+                        tmpl.WriteRune('`')
+                }</span>
                 <span class="cov8" title="1">msg = msg[idx+1:]</span>
         }
         <span class="cov8" title="1">return nil</span>
@@ -403,9 +427,9 @@ func (err DuplicateArg) Error() string <span class="cov0" title="0">{
         return sb.String()
 }</span>
 
-func ParseMap(msg string) (map[string]string, error) <span class="cov8" title="1">{
+func ParseMap(msg string, tmpl *bytes.Buffer) (map[string]string, error) <span class="cov8" title="1">{
         res := make(map[string]string)
-        err := Parse(msg, func(nm, val string) error </span><span class="cov8" title="1">{
+        err := Parse(msg, tmpl, func(nm, val string) error </span><span class="cov8" title="1">{
                 if vs, ok := res[nm]; ok </span><span class="cov0" title="0">{
                         return DuplicateArg{msg, nm, [2]string{vs, val}}
                 }</span>

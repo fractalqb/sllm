@@ -3,7 +3,6 @@ package sllm
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"reflect"
 	"testing"
@@ -33,7 +32,7 @@ func ExampleExpand() {
 	fmt.Println()
 	Expand(os.Stdout, "template with backtick '``' and an `arg` here", writeTestArg)
 	fmt.Println()
-	ExpandArgs(os.Stdout, "touching args: `one``two`", []byte("–"), 4711, true)
+	Expand(os.Stdout, "touching args: `one``two`", Args([]byte("–"), 4711, true))
 	fmt.Println()
 	// Output:
 	// want `arg1:#0/'arg1'` here and `arg2:#1/'arg2'` here
@@ -41,43 +40,50 @@ func ExampleExpand() {
 	// touching args: `one:4711``two:true`
 }
 
-func TestExpand_unterminated1(t *testing.T) {
-	var out bytes.Buffer
-	_, err := Expand(&out, "foo `bar without end", nil)
-	if err == nil {
-		t.Fatal("expected Expand error, got none")
+func TestExpand_syntaxerror(t *testing.T) {
+	test := func(t *testing.T, tmpl, emsg string) {
+		var out bytes.Buffer
+		_, err := Expand(&out, tmpl, nil)
+		if err == nil {
+			t.Fatal("expected Expand error, got none")
+		}
+		if se, ok := err.(SyntaxError); !ok {
+			t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
+		} else if se.Err != emsg {
+			t.Fatal("received wrong error:", err)
+		}
 	}
-	if se, ok := err.(SyntaxError); !ok {
-		t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
-	} else if se.Err != "unterminated argument" {
-		t.Fatal("received wrong error:", err)
-	}
+	t.Run("unterminated mid", func(t *testing.T) {
+		test(t, "foo `bar without end", "unterminated argument")
+	})
+	t.Run("unterminated end", func(t *testing.T) {
+		test(t, "without end `", "unterminated argument")
+	})
+	t.Run("name with colon", func(t *testing.T) {
+		test(t, "foo `ba:r` baz", "name contains ':'")
+	})
 }
 
-func TestExpand_unterminated2(t *testing.T) {
-	var out bytes.Buffer
-	_, err := Expand(&out, "without end `", nil)
-	if err == nil {
-		t.Fatal("expected Expand error, got none")
+func TestExtractParams(t *testing.T) {
+	ptest := func(t *testing.T, msg string, expect ...string) {
+		ps, err := ExtractParams(nil, msg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(ps, expect) {
+			t.Fatal("wrong params:", ps)
+		}
 	}
-	if se, ok := err.(SyntaxError); !ok {
-		t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
-	} else if se.Err != "unterminated argument" {
-		t.Fatal("received wrong error:", err)
-	}
-}
+	t.Run("single param", func(t *testing.T) {
+		ptest(t, "`foo`", "foo")
+	})
+	t.Run("one param mid", func(t *testing.T) {
+		ptest(t, "foo `bar`baz", "bar")
+	})
+	t.Run("two params", func(t *testing.T) {
+		ptest(t, "this is `foo` and `bar`", "foo", "bar")
+	})
 
-func TestExpand_name_with_colon(t *testing.T) {
-	var out bytes.Buffer
-	_, err := Expand(&out, "foo `ba:r` baz", nil)
-	if err == nil {
-		t.Fatal("expected Expand error, got none")
-	}
-	if se, ok := err.(SyntaxError); !ok {
-		t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
-	} else if se.Err != "name contains ':'" {
-		t.Fatal("received wrong error:", err)
-	}
 }
 
 func BenchmarkPrintf(b *testing.B) {
@@ -94,10 +100,9 @@ func BenchmarkExpandArgs(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
-		ExpandArgs(&out,
-			"just an `what`: `miss`", nil,
-			"example",
-			"<undef>")
+		Expand(&out,
+			"just an `what`: `miss`",
+			Args(nil, "example", "<undef>"))
 	}
 }
 
@@ -107,27 +112,27 @@ func BenchmarkExpandMap(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
-		ExpandMap(&out,
-			"just an `what`: `miss`", nil,
-			map[string]interface{}{
+		Expand(&out,
+			"just an `what`: `miss`",
+			Map(nil, map[string]interface{}{
 				"what": "example",
 				"miss": "<undef>",
-			})
+			}))
 	}
 }
 
-func ExampleForDocGo() {
-	const (
-		count = 7
-		item  = "Hat"
-		user  = "John Doe"
-	)
-	logr := log.New(os.Stdout, "", log.LstdFlags)
-	logr.Printf("added %d ⨉ %s to shopping cart by %s", count, item, user)
-	logr.Print(Map("added `count` ⨉ `item` to shopping cart by `user`",
-		ArgMap{
-			"count": count,
-			"item":  item,
-			"user":  user,
-		}))
-}
+// func Example_forDocGo() {
+// 	const (
+// 		count = 7
+// 		item  = "Hat"
+// 		user  = "John Doe"
+// 	)
+// 	logr := log.New(os.Stdout, "", log.LstdFlags)
+// 	logr.Printf("added %d ⨉ %s to shopping cart by %s", count, item, user)
+// 	logr.Print(Map("added `count` ⨉ `item` to shopping cart by `user`",
+// 		ArgMap{
+// 			"count": count,
+// 			"item":  item,
+// 			"user":  user,
+// 		}))
+// }
