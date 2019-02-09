@@ -24,7 +24,7 @@ type ValueEsc struct {
 }
 
 // Write escapes the content so that it can be reliably recognized in a sllm
-// message, i.e. replace a '`' with '``'.
+// message, i.e. replace a backtick '`' with two backticks '``'.
 func (ew ValueEsc) Write(p []byte) (n int, err error) {
 	var i int
 	var b1 [1]byte
@@ -62,13 +62,16 @@ func (err SyntaxError) Error() string {
 	return sb.String()
 }
 
+// ParamWriter is used by the Expand function to process an argument when it
+// apperas in the expand process of a template. Expand will pass the index idx
+// and the name of the argument to expand, i.e. write into the writer wr.
+// A ParamWriter returns the number of bytes writen and—just in case—an error.
 type ParamWriter = func(wr ValueEsc, idx int, name string) (int, error)
 
-func Expand(
-	wr io.Writer,
-	tmpl string,
-	writeArg ParamWriter,
-) (n int, err error) {
+// Expand writes a message to the io.Writer wr by expanding all arguments of
+// the given template tmpl. The actual process of expanding an argument is
+// left to the given ParamWriter writeArg.
+func Expand(wr io.Writer, tmpl string, writeArg ParamWriter) (n int, err error) {
 	var b1 [1]byte
 	bs := b1[:]
 	valEsc := ValueEsc{wr}
@@ -136,8 +139,9 @@ func Expand(
 	return n, nil
 }
 
-func Expands(tmpl string, writeArg ParamWriter) string {
+// Expands uses Expand to return the expanded temaplate as a string.
+func Expands(tmpl string, writeArg ParamWriter) (string, error) {
 	var buf bytes.Buffer
-	Expand(&buf, tmpl, writeArg)
-	return buf.String()
+	_, err := Expand(&buf, tmpl, writeArg)
+	return buf.String(), err
 }
