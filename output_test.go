@@ -22,22 +22,20 @@ func Example_valEsc_Write() {
 	// b``az
 }
 
-func writeTestArg(wr ValueEsc, idx int, name string) (int, error) {
-	n, err := fmt.Fprintf(wr, "#%d/'%s'", idx, name)
-	return n, err
-}
-
 func ExampleExpand() {
+	var writeTestArg = func(wr ValueEsc, idx int, name string) (int, error) {
+		return fmt.Fprintf(wr, "#%d/'%s'", idx, name)
+	}
 	Expand(os.Stdout, "want `arg1` here and `arg2` here", writeTestArg)
 	fmt.Println()
 	Expand(os.Stdout, "template with backtick '``' and an `arg` here", writeTestArg)
 	fmt.Println()
-	Expand(os.Stdout, "touching args: `one``two`", Args([]byte("–"), 4711, true))
+	Expand(os.Stdout, "touching args: `one``two``three`", Args([]byte("–"), 4711, true))
 	fmt.Println()
 	// Output:
 	// want `arg1:#0/'arg1'` here and `arg2:#1/'arg2'` here
 	// template with backtick '``' and an `arg:#0/'arg'` here
-	// touching args: `one:4711``two:true`
+	// touching args: `one:4711``two:true``three:–`
 }
 
 func TestExpand_syntaxerror(t *testing.T) {

@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+// Parse parses a sllm message create by Expand and calls onArg for every
+// `name:value` parameter it finds in the message. When a non-nil buffer is
+// passed as tmpl Parse will also reconstruct the original template into the
+// buffer. Note that the template is appended to tmpl's content.
 func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string) error) error {
 	for len(msg) > 0 {
 		idx := strings.IndexByte(msg, tmplEsc)
@@ -54,30 +58,17 @@ func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string) error)
 	return nil
 }
 
-type DuplicateArg struct {
-	Msg  string
-	Arg  string
-	Vals [2]string
-}
-
-func (err DuplicateArg) Error() string {
-	var sb bytes.Buffer
-	Expand(&sb,
-		"duplcate `arg` with values `old` / `new` in `message`",
-		Args(nil, err.Arg, err.Vals[0], err.Vals[1], err.Msg))
-	return sb.String()
-}
-
-func ParseMap(msg string, tmpl *bytes.Buffer) (map[string]string, error) {
-	res := make(map[string]string)
-	err := Parse(msg, tmpl, func(nm, val string) error {
-		if vs, ok := res[nm]; ok {
-			return DuplicateArg{msg, nm, [2]string{vs, val}}
-		}
-		res[nm] = val
+// ParseMap uses Parse to create a map with all parameters assigne to an
+// argument in the passed message msg. ParseMap can also reconstruct the
+// template when passing a Buffer to tmpl.
+func ParseMap(msg string, tmpl *bytes.Buffer) map[string][]string {
+	res := make(map[string][]string)
+	Parse(msg, tmpl, func(nm, val string) error {
+		vls := res[nm]
+		res[nm] = append(vls, val)
 		return nil
 	})
-	return res, err
+	return res
 }
 
 // ExtractParams extracs the parameter names from template tmpl and appends them
