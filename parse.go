@@ -58,7 +58,7 @@ func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string) error)
 	return nil
 }
 
-// ParseMap uses Parse to create a map with all parameters assigne to an
+// ParseMap uses Parse to create a map with all parameters assigned to an
 // argument in the passed message msg. ParseMap can also reconstruct the
 // template when passing a Buffer to tmpl.
 func ParseMap(msg string, tmpl *bytes.Buffer) map[string][]string {
