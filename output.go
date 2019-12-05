@@ -15,7 +15,7 @@ const (
 var tEsc2 = []byte{tmplEsc, tmplEsc}
 var nmSepStr = []byte{nmSep}
 
-// ValueEsc is used by Expand to escap the argument when written as value of
+// ValueEsc is used by Expand to escape the argument when written as value of
 // a parameter. It is assumed that a user of this package should not use this
 // type directly. However the type it will be needed if one has to provide an
 // own implemenetation of the writeArg parameter of the Expand function.
@@ -63,9 +63,13 @@ func (err SyntaxError) Error() string {
 }
 
 // ParamWriter is used by the Expand function to process an argument when it
-// apperas in the expand process of a template. Expand will pass the index idx
+// appears in the expand process of a template. Expand will pass the index idx
 // and the name of the argument to expand, i.e. write into the writer wr.
 // A ParamWriter returns the number of bytes writen and—just in case—an error.
+//
+// NOTE The writer wr of type ValueEsc will escape whatever ParamWriter
+//      writes to wr so that the template escape symbol '`' remains
+//      recognizable.
 type ParamWriter = func(wr ValueEsc, idx int, name string) (int, error)
 
 // Expand writes a message to the io.Writer wr by expanding all arguments of
