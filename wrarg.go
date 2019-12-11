@@ -20,7 +20,7 @@ func Args(undef []byte, argv ...interface{}) ParamWriter {
 				n, err = wr.Write(undef)
 			}
 		} else {
-			n, err = writeVal(wr, argv[idx])
+			n, err = fmt.Fprint(wr, argv[idx])
 		}
 		return n, err
 	}
@@ -43,10 +43,8 @@ func Map(undef []byte, m ArgMap) ParamWriter {
 				n, err = wr.Write(undef)
 			}
 		} else {
-			n, err = writeVal(wr, val)
+			n, err = fmt.Fprint(wr, val)
 		}
 		return n, err
 	}
 }
-
-var writeVal = fmt.Fprint

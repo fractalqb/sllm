@@ -26,22 +26,19 @@ type ValueEsc struct {
 // Write escapes the content so that it can be reliably recognized in a sllm
 // message, i.e. replace a backtick '`' with two backticks '``'.
 func (ew ValueEsc) Write(p []byte) (n int, err error) {
-	var i int
-	var b1 [1]byte
-	bs := b1[:]
+	tmp := make([]byte, 2*len(p))
+	wp := 0
 	for _, b := range p {
 		if b == tmplEsc {
-			i, err = ew.wr.Write(tEsc2)
+			tmp[wp] = tmplEsc
+			wp++
+			tmp[wp] = tmplEsc
 		} else {
-			bs[0] = b
-			i, err = ew.wr.Write(bs)
+			tmp[wp] = b
 		}
-		if err != nil {
-			return n, err
-		}
-		n += i
+		wp++
 	}
-	return n, nil
+	return ew.wr.Write(tmp[:wp])
 }
 
 // SyntaxError describes errors of the sllm template syntax in a message

@@ -27,10 +27,10 @@ To decide for either human readability or machine processing means
 that significant cutbacks are made to the other requirement. _sllm_
 picks up the idea of "markup", which is typically intended to bring
 human readability and machine processing together. At the same time,
-_sllm_ remains simple and unobtrusive—unlike XML ;).
+_sllm_ remains simple and unobtrusive—unlike XML or even JSON.
 
 Let's take the example of a standard log message that states some
-business relevant event an might be generated from the following
+business relevant event and might be generated from the following
 pseudo-code:
 
 ```
@@ -57,7 +57,8 @@ to make a choice. But, can't we have both in one?
 
 **Note** that _sllm_ focuses on the log message.  We do not propose how
 to handle other pieces of information! So lets have a look what _sllm_
-would do with some decent log formats.
+would do with some decent log formats. We use `↩/↪` only to avoid very
+long lines on this page. In real logs things would be on one line!
 
 ### Classic log output
 
@@ -104,7 +105,7 @@ subject of presonal interpretation of technical key/value pairs any
 more. That's fine! But there is still a significant amount of “visual
 noise”. However the result is quite acceptable. But one still may ask
 if the redundancy in the log entry is necessary. With a “slim” message
-it is not.
+you don't need that redundancy.
 
 **With sllm message:**
 ```
