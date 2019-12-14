@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -32,33 +33,54 @@ func ExampleExpand() {
 	fmt.Println()
 	Expand(os.Stdout, "touching args: `one``two``three`", Args([]byte("–"), 4711, true))
 	fmt.Println()
+	Expand(os.Stdout, "explicit `index:0` and `same:0`", Args(nil, 4711))
+	fmt.Println()
 	// Output:
 	// want `arg1:#0/'arg1'` here and `arg2:#1/'arg2'` here
 	// template with backtick '``' and an `arg:#0/'arg'` here
 	// touching args: `one:4711``two:true``three:–`
+	// explicit `index:4711` and `same:4711`
+}
+
+func ExampleExpand_explicitIndex() {
+	var writeTestArg = func(wr ValueEsc, idx int, name string) (int, error) {
+		return fmt.Fprint(wr, idx)
+	}
+	Expand(os.Stdout, "`a`, `b:11`, `c`, `d:0`, `e`", writeTestArg)
+	// Output:
+	// `a:0`, `b:11`, `c:1`, `d:0`, `e:2`
 }
 
 func TestExpand_syntaxerror(t *testing.T) {
-	test := func(t *testing.T, tmpl, emsg string) {
+	test := func(t *testing.T, tmpl string, epos int, emsg string) {
 		var out bytes.Buffer
 		_, err := Expand(&out, tmpl, nil)
 		if err == nil {
 			t.Fatal("expected Expand error, got none")
 		}
 		if se, ok := err.(SyntaxError); !ok {
-			t.Fatal("received wrong error type:", reflect.TypeOf(err).Name())
-		} else if se.Err != emsg {
-			t.Fatal("received wrong error:", err)
+			t.Error("received wrong error type:", reflect.TypeOf(err).Name())
+		} else {
+			errArgs := ParseMap(se.Error(), nil)
+			if pos := errArgs["pos"][0]; pos != strconv.Itoa(epos) {
+				t.Errorf("wrong error position %s, expected %d", pos, epos)
+			}
+			if errArgs["desc"][0] != emsg {
+				t.Fatal("received wrong error:", err)
+			}
 		}
 	}
 	t.Run("unterminated mid", func(t *testing.T) {
-		test(t, "foo `bar without end", "unterminated argument")
+		test(t, "foo `bar without end", 20, "unterminated argument")
 	})
 	t.Run("unterminated end", func(t *testing.T) {
-		test(t, "without end `", "unterminated argument")
+		test(t, "without end `", 13, "unterminated argument")
 	})
-	t.Run("name with colon", func(t *testing.T) {
-		test(t, "foo `ba:r` baz", "name contains ':'")
+	t.Run("empty explicit index", func(t *testing.T) {
+		test(t, "foo `ba:` baz", 8, "empty explicit index")
+	})
+	t.Run("non-numeric explicit index", func(t *testing.T) {
+		test(t, "foo `ba:1x2` baz", 9, "not a digit in explicit arg index")
 	})
 }
 

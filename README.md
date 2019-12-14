@@ -7,8 +7,6 @@
 A human readable approach to make parameters from an actual log
 message recognizable for machines.
 
-(Pronounce it like “slim”)
-
 Disclaimer: _sllm_ is **not** a loggin library. Its a concept to make
 log messages human- and machine-readable at the same time. There are
 [some

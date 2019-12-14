@@ -10,7 +10,7 @@ benchmark:
 	go test -bench=.
 
 cpuprof:
-	go test -cpuprofile cpu.prof -bench BenchmarkExpandArgs
+	go test -cpuprofile cpu.prof -bench
 	go tool pprof -http :6060 sllm.test cpu.prof
 # Read with '$ go tool pprof cpu.prof' >>> e.g. '(pprof) web'
 

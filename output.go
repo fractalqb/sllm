@@ -2,9 +2,7 @@ package sllm
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"strings"
 )
 
 const (
@@ -13,6 +11,7 @@ const (
 )
 
 var tEsc2 = []byte{tmplEsc, tmplEsc}
+var tEsc1 = tEsc2[:1]
 var nmSepStr = []byte{nmSep}
 
 // ValueEsc is used by Expand to escape the argument when written as value of
@@ -73,71 +72,118 @@ type ParamWriter = func(wr ValueEsc, idx int, name string) (int, error)
 // the given template tmpl. The actual process of expanding an argument is
 // left to the given ParamWriter writeArg.
 func Expand(wr io.Writer, tmpl string, writeArg ParamWriter) (n int, err error) {
-	var b1 [1]byte
+	var (
+		b1 [1]byte
+		tn int
+		xi bool
+	)
 	bs := b1[:]
-	valEsc := ValueEsc{wr}
-	tlen := len(tmpl)
-	idx := 0
-	for i := 0; i < tlen; i++ {
+	idx, i := 0, 0
+	for i < len(tmpl) {
 		if b := tmpl[i]; b == tmplEsc {
-			wn, err := wr.Write(tEsc2[:1])
-			n += wn
+			i++
+			if i >= len(tmpl) {
+				return n, SyntaxError{tmpl, len(tmpl), "unterminated argument"}
+			}
+			if tmpl[i] == tmplEsc {
+				if tn, err = wr.Write(tEsc2); err != nil {
+					return n + tn, err
+				}
+				i++
+			} else if i, tn, xi, err = xpandNm(wr, idx, tmpl, i, writeArg); err != nil {
+				return n + tn, err
+			} else if !xi {
+				idx++
+			}
+			n += tn
+		} else {
+			bs[0] = b
+			tn, err = wr.Write(bs)
+			n += tn
 			if err != nil {
 				return n, err
 			}
 			i++
-			switch {
-			case i >= tlen:
-				return n, SyntaxError{tmpl, i, "unterminated argument"}
-			case tmpl[i] == tmplEsc:
-				wn, err := wr.Write(tEsc2[:1])
-				n += wn
-				if err != nil {
-					return n, err
-				}
-			default:
-				name := tmpl[i:]
-				nmLen := strings.IndexByte(name, tmplEsc)
-				if nmLen < 0 {
-					return n, SyntaxError{tmpl, i, "unterminated argument"}
-				}
-				name = name[:nmLen]
-				if strings.IndexByte(name, nmSep) >= 0 {
-					return n, SyntaxError{tmpl, i, fmt.Sprintf("name contains '%c'", nmSep)}
-				}
-				wn, err = io.WriteString(wr, name)
-				n += wn
-				if err != nil {
-					return n, err
-				}
-				wn, err = wr.Write(nmSepStr)
-				n += wn
-				if err != nil {
-					return n, err
-				}
-				wn, err = writeArg(valEsc, idx, name)
-				n += wn
-				if err != nil {
-					return n, err
-				}
-				wn, err = wr.Write(tEsc2[:1])
-				n += wn
-				if err != nil {
-					return n, err
-				}
-				idx++
-				i += nmLen
-			}
-		} else {
-			bs[0] = b
-			wn, err := wr.Write(bs)
-			n += wn
-			if err != nil {
-				return n, err
-			}
 		}
 	}
 	return n, nil
+}
+
+func argIdx(tmpl string, ip int) (idx, res int, err error) {
+	start := ip
+	for ip < len(tmpl) {
+		b := tmpl[ip]
+		if b == tmplEsc {
+			if ip == start {
+				return -1, -1, SyntaxError{tmpl, ip, "empty explicit index"}
+			}
+			return ip + 1, res, nil
+		}
+		if b < '0' || b > '9' {
+			return -1, -1, SyntaxError{tmpl, ip, "not a digit in explicit arg index"}
+		}
+		res = 10*res + int(b-'0')
+		ip++
+	}
+	return -1, -1, SyntaxError{tmpl, len(tmpl), "unterminated argument"}
+}
+
+func xpandNm(wr io.Writer, idx int, tmpl string, np int, writeArg ParamWriter) (
+	rp, wn int,
+	xidx bool,
+	err error,
+) {
+	var tn int
+	if wn, err = wr.Write(tEsc1); err != nil {
+		return -1, wn, false, err
+	}
+	for i := np; i < len(tmpl); i++ {
+		b := tmpl[i]
+		switch b {
+		case tmplEsc:
+			name := tmpl[np:i]
+			if tn, err = io.WriteString(wr, name); err != nil {
+				return -1, wn + tn, false, err
+			}
+			wn += tn
+			if tn, err = wr.Write(nmSepStr); err != nil {
+				return -1, wn + tn, false, err
+			}
+			wn += tn
+			if tn, err = writeArg(ValueEsc{wr}, idx, name); err != nil {
+				return -1, wn + tn, false, err
+			}
+			wn += tn
+			if tn, err = wr.Write(tEsc1); err != nil {
+				return i + 1, wn + tn, false, err
+			}
+			wn += tn
+			return i + 1, wn, false, nil
+		case nmSep:
+			name := tmpl[np:i]
+			if i, idx, err = argIdx(tmpl, i+1); err != nil {
+				return -1, wn, true, err
+			}
+			if tn, err = io.WriteString(wr, name); err != nil {
+				return -1, wn + tn, true, err
+			}
+			wn += tn
+			if tn, err = wr.Write(nmSepStr); err != nil {
+				return -1, wn + tn, true, err
+			}
+			wn += tn
+			if tn, err = writeArg(ValueEsc{wr}, idx, name); err != nil {
+				return -1, wn + tn, true, err
+			}
+			wn += tn
+			if tn, err = wr.Write(tEsc1); err != nil {
+				return -1, wn + tn, true, err
+			}
+			wn += tn
+			return i, wn, true, nil
+		}
+	}
+	return -1, wn, false, SyntaxError{tmpl, len(tmpl), "unterminated argument"}
 }
 
 // Expands uses Expand to return the expanded temaplate as a string.
