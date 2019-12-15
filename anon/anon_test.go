@@ -2,6 +2,7 @@ package anon
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"git.fractalqb.de/fractalqb/sllm"
@@ -9,7 +10,7 @@ import (
 
 func ExampleByName() {
 	anon := ByName{
-		Clear: func(wr sllm.ValueEsc, idx int, name string) (int, error) {
+		Clear: func(wr io.Writer, idx int, name string) (int, error) {
 			return fmt.Printf("<param #%d %s>", idx, name)
 		},
 		Anon: map[string]sllm.ParamWriter{

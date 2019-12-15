@@ -18,13 +18,13 @@ var nmSepStr = []byte{nmSep}
 // a parameter. It is assumed that a user of this package should not use this
 // type directly. However the type it will be needed if one has to provide an
 // own implemenetation of the writeArg parameter of the Expand function.
-type ValueEsc struct {
+type valEsc struct {
 	wr io.Writer
 }
 
 // Write escapes the content so that it can be reliably recognized in a sllm
 // message, i.e. replace a backtick '`' with two backticks '``'.
-func (ew ValueEsc) Write(p []byte) (n int, err error) {
+func (ew valEsc) Write(p []byte) (n int, err error) {
 	tmp := make([]byte, 2*len(p))
 	wp := 0
 	for _, b := range p {
@@ -66,7 +66,7 @@ func (err SyntaxError) Error() string {
 // NOTE The writer wr of type ValueEsc will escape whatever ParamWriter
 //      writes to wr so that the template escape symbol '`' remains
 //      recognizable.
-type ParamWriter = func(wr ValueEsc, idx int, name string) (int, error)
+type ParamWriter = func(wr io.Writer, idx int, name string) (int, error)
 
 // Expand writes a message to the io.Writer wr by expanding all arguments of
 // the given template tmpl. The actual process of expanding an argument is
@@ -150,7 +150,7 @@ func xpandNm(wr io.Writer, idx int, tmpl string, np int, writeArg ParamWriter) (
 				return -1, wn + tn, false, err
 			}
 			wn += tn
-			if tn, err = writeArg(ValueEsc{wr}, idx, name); err != nil {
+			if tn, err = writeArg(valEsc{wr}, idx, name); err != nil {
 				return -1, wn + tn, false, err
 			}
 			wn += tn
@@ -172,7 +172,7 @@ func xpandNm(wr io.Writer, idx int, tmpl string, np int, writeArg ParamWriter) (
 				return -1, wn + tn, true, err
 			}
 			wn += tn
-			if tn, err = writeArg(ValueEsc{wr}, idx, name); err != nil {
+			if tn, err = writeArg(valEsc{wr}, idx, name); err != nil {
 				return -1, wn + tn, true, err
 			}
 			wn += tn

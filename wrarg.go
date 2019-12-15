@@ -2,6 +2,7 @@ package sllm
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 )
 
@@ -12,7 +13,7 @@ func (err IllegalArgIndex) Error() string {
 }
 
 func Args(undef []byte, argv ...interface{}) ParamWriter {
-	return func(wr ValueEsc, idx int, name string) (n int, err error) {
+	return func(wr io.Writer, idx int, name string) (n int, err error) {
 		if idx < 0 || idx >= len(argv) {
 			if undef == nil {
 				return 0, IllegalArgIndex(idx)
@@ -35,7 +36,7 @@ func (err UndefinedArg) Error() string {
 type ArgMap = map[string]interface{}
 
 func Map(undef []byte, m ArgMap) ParamWriter {
-	return func(wr ValueEsc, idx int, name string) (n int, err error) {
+	return func(wr io.Writer, idx int, name string) (n int, err error) {
 		if val, ok := m[name]; !ok {
 			if undef == nil {
 				return 0, UndefinedArg(name)

@@ -2,6 +2,7 @@ package sllm
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"strings"
 )
@@ -75,7 +76,7 @@ func ParseMap(msg string, tmpl *bytes.Buffer) map[string][]string {
 // to appendTo.
 func ExtractParams(appendTo []string, tmpl string) ([]string, error) {
 	_, err := Expand(ioutil.Discard, tmpl,
-		func(wr ValueEsc, idx int, name string) (int, error) {
+		func(wr io.Writer, idx int, name string) (int, error) {
 			appendTo = append(appendTo, name)
 			return len(name), nil
 		},

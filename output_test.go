@@ -3,6 +3,7 @@ package sllm
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"strconv"
@@ -10,7 +11,7 @@ import (
 )
 
 func Example_valEsc_Write() {
-	ew := ValueEsc{os.Stdout}
+	ew := valEsc{os.Stdout}
 	ew.Write([]byte("foo"))
 	fmt.Fprintln(os.Stdout)
 	ew.Write([]byte("`bar`"))
@@ -24,7 +25,7 @@ func Example_valEsc_Write() {
 }
 
 func ExampleExpand() {
-	var writeTestArg = func(wr ValueEsc, idx int, name string) (int, error) {
+	var writeTestArg = func(wr io.Writer, idx int, name string) (int, error) {
 		return fmt.Fprintf(wr, "#%d/'%s'", idx, name)
 	}
 	Expand(os.Stdout, "want `arg1` here and `arg2` here", writeTestArg)
@@ -43,7 +44,7 @@ func ExampleExpand() {
 }
 
 func ExampleExpand_explicitIndex() {
-	var writeTestArg = func(wr ValueEsc, idx int, name string) (int, error) {
+	var writeTestArg = func(wr io.Writer, idx int, name string) (int, error) {
 		return fmt.Fprint(wr, idx)
 	}
 	Expand(os.Stdout, "`a`, `b:11`, `c`, `d:0`, `e`", writeTestArg)

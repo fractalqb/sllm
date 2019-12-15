@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/fractalqb/sllm.svg)](https://travis-ci.org/fractalqb/sllm)
 [![codecov](https://codecov.io/gh/fractalqb/sllm/branch/master/graph/badge.svg)](https://codecov.io/gh/fractalqb/sllm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/sllm)](https://goreportcard.com/report/github.com/fractalqb/sllm)
-[![GoDoc](https://godoc.org/github.com/fractalqb/sllm?status.svg)](https://godoc.org/github.com/fractalqb/sllm)
+[![GoDoc](https://godoc.org/github.com/fractalqb/sllm?status.svg)](https://pkg.go.dev/git.fractalqb.de/fractalqb/sllm)
 
 A human readable approach to make parameters from an actual log
 message recognizable for machines.
