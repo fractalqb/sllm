@@ -72,7 +72,7 @@ func TestExpand_syntaxerror(t *testing.T) {
 		}
 	}
 	t.Run("unterminated mid", func(t *testing.T) {
-		test(t, "foo `bar without end", 20, "unterminated argument")
+		test(t, "foo `bar without end", 5, "unterminated argument")
 	})
 	t.Run("unterminated end", func(t *testing.T) {
 		test(t, "without end `", 13, "unterminated argument")
