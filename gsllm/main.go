@@ -18,7 +18,10 @@ func listIds(rd io.Reader, prefix string) {
 	scn := bufio.NewScanner(rd)
 	for scn.Scan() {
 		line := scn.Text()
-		params := sllm.ParseMap(line, nil)
+		params, err := sllm.ParseMap(line, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 		for arg, _ := range params {
 			args[arg] = 1
 		}

@@ -7,7 +7,7 @@ import (
 
 func ExampleParseMap() {
 	var tmpl bytes.Buffer
-	m := ParseMap(
+	m, _ := ParseMap(
 		"added `count:7` ⨉ `item:Hat` to shopping cart by `user:John Doe`",
 		&tmpl,
 	)

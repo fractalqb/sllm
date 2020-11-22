@@ -62,14 +62,14 @@ func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string) error)
 // ParseMap uses Parse to create a map with all parameters assigned to an
 // argument in the passed message msg. ParseMap can also reconstruct the
 // template when passing a Buffer to tmpl.
-func ParseMap(msg string, tmpl *bytes.Buffer) map[string][]string {
+func ParseMap(msg string, tmpl *bytes.Buffer) (map[string][]string, error) {
 	res := make(map[string][]string)
-	Parse(msg, tmpl, func(nm, val string) error {
+	err := Parse(msg, tmpl, func(nm, val string) error {
 		vls := res[nm]
 		res[nm] = append(vls, val)
 		return nil
 	})
-	return res
+	return res, err
 }
 
 // ExtractParams extracs the parameter names from template tmpl and appends them

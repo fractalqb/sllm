@@ -62,7 +62,10 @@ func TestExpand_syntaxerror(t *testing.T) {
 		if se, ok := err.(SyntaxError); !ok {
 			t.Error("received wrong error type:", reflect.TypeOf(err).Name())
 		} else {
-			errArgs := ParseMap(se.Error(), nil)
+			errArgs, err := ParseMap(se.Error(), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
 			if pos := errArgs["pos"][0]; pos != strconv.Itoa(epos) {
 				t.Errorf("wrong error position %s, expected %d", pos, epos)
 			}
