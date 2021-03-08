@@ -23,19 +23,21 @@ var (
 // type directly. However the type it will be needed if one has to provide an
 // own implemenetation of the writeArg parameter of the Expand function.
 type valEsc struct {
-	wr io.Writer
+	wr  io.Writer
+	buf []byte
 }
 
 // Write escapes the content so that it can be reliably recognized in a sllm
 // message, i.e. replace a backtick '`' with two backticks '``'.
-func (ew valEsc) Write(p []byte) (n int, err error) {
-	tmp := make([]byte, 0, 2*len(p))
+func (ew *valEsc) Write(p []byte) (n int, err error) {
+	tmp := ew.buf[:0]
 	for _, b := range p {
 		if b == tmplEsc {
 			tmp = append(tmp, tmplEsc)
 		}
 		tmp = append(tmp, b)
 	}
+	ew.buf = tmp
 	return ew.wr.Write(tmp)
 }
 
@@ -115,7 +117,7 @@ func Expand(wr io.Writer, tmpl string, writeArg ParamWriter) (n int, err error) 
 			lastIdx++
 			argIdx = lastIdx
 		}
-		m, err = writeArg(vEsc, argIdx, argName)
+		m, err = writeArg(&vEsc, argIdx, argName)
 		n += m
 		if err != nil {
 			return n, err

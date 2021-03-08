@@ -7,11 +7,12 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 )
 
 func Example_valEsc_Write() {
-	ew := valEsc{os.Stdout}
+	ew := valEsc{wr: os.Stdout}
 	ew.Write([]byte("foo"))
 	fmt.Fprintln(os.Stdout)
 	ew.Write([]byte("`bar`"))
@@ -114,9 +115,11 @@ func BenchmarkPrintf(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
-		fmt.Fprintf(&out, "just an `what:%s`: `miss:%s`",
-			"example",
-			"<undef>")
+		fmt.Fprintf(&out,
+			"added `count:%d` x `item:%s` to shopping cart by `user:%s`",
+			7,
+			"`hat`",
+			"John Doe")
 	}
 }
 
@@ -125,8 +128,9 @@ func BenchmarkExpandArgs(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		out.Reset()
 		Expand(&out,
-			"just an `what`: `miss`",
-			Args(nil, "example", "<undef>"))
+			"added `count` x `item` to shopping cart by `user`",
+			Args(nil, 7, "`hat`", "John Doe"),
+		)
 	}
 }
 
@@ -137,11 +141,13 @@ func BenchmarkExpandMap(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		out.Reset()
 		Expand(&out,
-			"just an `what`: `miss`",
+			"added `count` x `item` to shopping cart by `user`",
 			Map(nil, map[string]interface{}{
-				"what": "example",
-				"miss": "<undef>",
-			}))
+				"count": 7,
+				"item":  "`hat`",
+				"user":  "John Doe",
+			}),
+		)
 	}
 }
 
@@ -160,3 +166,89 @@ func BenchmarkExpandMap(b *testing.B) {
 // 			"user":  user,
 // 		}))
 // }
+
+func tuneExpand(wr io.Writer, tmpl string, writeArg ParamWriter) (n int, err error) {
+	errTmpl := SyntaxError{Tmpl: tmpl}
+	vEsc := valEsc{wr: wr}
+	off, lastIdx := 0, -1
+	for len(tmpl) > 0 {
+		i := strings.IndexByte(tmpl, tmplEsc)
+		if i < 0 {
+			m, err := io.WriteString(wr, tmpl)
+			return n + m, err
+		}
+		if i++; i >= len(tmpl) {
+			errTmpl.Pos = off + i
+			errTmpl.Err = "unterminated argument"
+			return n, errTmpl
+		}
+		if tmpl[i] == tmplEsc {
+			i++
+			m, err := io.WriteString(wr, tmpl[:i])
+			if err != nil {
+				return n + m, err
+			}
+			tmpl = tmpl[i:]
+			off += i
+			continue
+		}
+		argName, argIdx, pLen, err := parseArg(tmpl[i:])
+		if err != nil {
+			errTmpl.Pos = off + i + pLen
+			errTmpl.Err = err.Error()
+			return n, errTmpl
+		}
+		m, err := io.WriteString(wr, tmpl[:i+len(argName)])
+		n += m
+		if err != nil {
+			return n, err
+		}
+		m, err = wr.Write(nmSepStr)
+		n += m
+		if err != nil {
+			return n, err
+		}
+		if argIdx < 0 {
+			lastIdx++
+			argIdx = lastIdx
+		}
+		m, err = writeArg(&vEsc, argIdx, argName)
+		n += m
+		if err != nil {
+			return n, err
+		}
+		m, err = wr.Write(tEsc1)
+		n += m
+		if err != nil {
+			return n, err
+		}
+		tmpl = tmpl[i+pLen:]
+	}
+	return n, err
+}
+
+func BenchmarkTuneExpandArgs(b *testing.B) {
+	var out bytes.Buffer
+	for i := 0; i < b.N; i++ {
+		out.Reset()
+		tuneExpand(&out,
+			"added `count` x `item` to shopping cart by `user`",
+			Args(nil, 7, "`hat`", "John Doe"),
+		)
+	}
+}
+
+func BenchmarkTuneExpandMap(b *testing.B) {
+	var out bytes.Buffer
+	for i := 0; i < b.N; i++ {
+		out.Reset()
+		tuneExpand(&out,
+			"added `count` x `item` to shopping cart by `user`",
+			Map(nil, ArgMap{
+				"count": 7,
+				"item":  "`hat`",
+				"user":  "John Doe",
+			}),
+		)
+	}
+}
