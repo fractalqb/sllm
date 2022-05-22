@@ -2,7 +2,6 @@ package sllm
 
 import (
 	"fmt"
-	"io"
 	"strconv"
 )
 
@@ -12,23 +11,23 @@ func (err IllegalArgIndex) Error() string {
 	return strconv.Itoa(int(err))
 }
 
-type wrArgs struct {
-	undef []byte
-	argv  []interface{}
+type wrArgv struct {
+	undef string
+	argv  []any
 }
 
-func (ta wrArgs) wr(wr io.Writer, idx int, name string) (n int, err error) {
+func (ta wrArgv) wr(wr *ArgWriter, idx int, name string) (n int, err error) {
 	if idx >= 0 && idx < len(ta.argv) {
 		return fmt.Fprint(wr, ta.argv[idx])
 	}
-	if ta.undef == nil {
+	if ta.undef == "" {
 		return 0, IllegalArgIndex(idx)
 	}
-	return wr.Write(ta.undef)
+	return wr.Write([]byte(ta.undef))
 }
 
-func Args(u []byte, av ...interface{}) ParamWriter {
-	return wrArgs{undef: u, argv: av}.wr
+func Argv(u string, av ...any) ArgPrintFunc {
+	return wrArgv{undef: u, argv: av}.wr
 }
 
 type UndefinedArg string
@@ -37,24 +36,22 @@ func (err UndefinedArg) Error() string {
 	return string(err)
 }
 
-type ArgMap = map[string]interface{}
-
-func Map(u []byte, m ArgMap) ParamWriter {
-	return wrMap{undef: u, args: m}.wr
+func Named(u string, m map[string]any) ArgPrintFunc {
+	return wrNamed{undef: u, args: m}.wr
 }
 
-type wrMap struct {
-	undef []byte
-	args  map[string]interface{}
+type wrNamed struct {
+	undef string
+	args  map[string]any
 }
 
-func (m wrMap) wr(wr io.Writer, idx int, name string) (n int, err error) {
+func (m wrNamed) wr(wr *ArgWriter, idx int, name string) (n int, err error) {
 	val, ok := m.args[name]
 	if ok {
 		return fmt.Fprint(wr, val)
 	}
-	if m.undef == nil {
+	if m.undef == "" {
 		return 0, UndefinedArg(name)
 	}
-	return wr.Write(m.undef)
+	return wr.Write([]byte(m.undef))
 }

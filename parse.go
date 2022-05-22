@@ -2,8 +2,6 @@ package sllm
 
 import (
 	"bytes"
-	"io"
-	"io/ioutil"
 	"strings"
 )
 
@@ -75,8 +73,8 @@ func ParseMap(msg string, tmpl *bytes.Buffer) (map[string][]string, error) {
 // ExtractParams extracs the parameter names from template tmpl and appends them
 // to appendTo.
 func ExtractParams(appendTo []string, tmpl string) ([]string, error) {
-	_, err := Expand(ioutil.Discard, tmpl,
-		func(wr io.Writer, idx int, name string) (int, error) {
+	_, err := Expand(nil, tmpl,
+		func(wr *ArgWriter, idx int, name string) (int, error) {
 			appendTo = append(appendTo, name)
 			return len(name), nil
 		},

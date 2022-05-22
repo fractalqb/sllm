@@ -3,15 +3,14 @@ package sllm
 import (
 	"bytes"
 	"fmt"
-	"strings"
 	"testing"
 )
 
 func Test_OutAndParse(t *testing.T) {
-	undef := []byte("<?>")
-	test := func(t *testing.T, tmpl string, args ArgMap) {
-		var buf strings.Builder
-		_, err := Expand(&buf, tmpl, Map(undef, args))
+	undef := "<?>"
+	test := func(t *testing.T, tmpl string, args map[string]any) {
+		var buf bytes.Buffer
+		_, err := Bprint(&buf, tmpl, Named(undef, args))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -41,27 +40,27 @@ func Test_OutAndParse(t *testing.T) {
 	}
 	type testCase struct {
 		tmpl string
-		args ArgMap
+		args map[string]any
 	}
 	tests := map[string]testCase{
-		"no args": testCase{
+		"no args": {
 			tmpl: "foo bar bar",
 		},
-		"single arg only": testCase{
+		"single arg only": {
 			tmpl: "`arg`",
-			args: ArgMap{"arg": 4711},
+			args: map[string]any{"arg": 4711},
 		},
-		"arg with \\r": testCase{
+		"arg with \\r": {
 			tmpl: "with `arg` carriage return",
-			args: ArgMap{"arg": "hide \r this"},
+			args: map[string]any{"arg": "hide \r this"},
 		},
-		"arg with \\n": testCase{
+		"arg with \\n": {
 			tmpl: "with `arg` new line",
-			args: ArgMap{"arg": "break \n this"},
+			args: map[string]any{"arg": "break \n this"},
 		},
-		"arg with 0-byte": testCase{
+		"arg with 0-byte": {
 			tmpl: "with `arg` new line",
-			args: ArgMap{"arg": "Zero \x00 byte"},
+			args: map[string]any{"arg": "Zero \x00 byte"},
 		},
 	}
 	for n, c := range tests {

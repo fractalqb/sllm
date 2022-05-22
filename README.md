@@ -1,18 +1,24 @@
-# sllm – Structured Logging Leightweight Markup
+# sllm – Structured Logging Lightweight Markup
 [![Build Status](https://travis-ci.org/fractalqb/sllm.svg)](https://travis-ci.org/fractalqb/sllm)
 [![codecov](https://codecov.io/gh/fractalqb/sllm/branch/master/graph/badge.svg)](https://codecov.io/gh/fractalqb/sllm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/sllm)](https://goreportcard.com/report/github.com/fractalqb/sllm)
-[![GoDoc](https://godoc.org/github.com/fractalqb/sllm?status.svg)](https://pkg.go.dev/git.fractalqb.de/fractalqb/sllm)
+[![Go Reference](https://pkg.go.dev/badge/git.fractalqb.de/fractalqb/sllm.svg)](https://pkg.go.dev/git.fractalqb.de/fractalqb/sllm)
 
 A human readable approach to make parameters from an actual log
-message recognizable for machines.
+message machine-readable.
 
-Disclaimer: _sllm_ is **not** a loggin library. Its a concept to make
+Disclaimer: _sllm_ is **not** a logging library. Its a concept to make
 log messages human- and machine-readable at the same time. There are
 [some
-examples](https://godoc.org/github.com/fractalqb/sllm#pkg-examples) in
+examples](https://pkg.go.dev/git.fractalqb.de/fractalqb/sllm#pkg-examples) in
 the Go reference docs. For a Go logging lib that uses _sllm_ see
 [qbsllm](https://github.com/fractalqb/qbsllm).
+
+__Usage:__
+
+```
+import "git.fractalqb.de/fractalqb/sllm/v2"
+```
 
 ## Rationale
 Logging is subject to two conflicting requirements. Log entries should

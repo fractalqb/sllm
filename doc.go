@@ -1,12 +1,12 @@
 /*
-Package sllm is the reference implementation for the sllm log message format.
+Package sllm is the 2nd iteration of the reference implementation for
+the Structured Logging Lightweight Markup format.
 
-sllm is short for Structured Logging Lightweight Markup.  Its goal is
-to provide a human readable format for the message part of log-entries
-that allows parameters in the log message to be reliably recognized by
-programs. A task generally addressed by markup languages. For sllm we
-want something much less obstrusive than e.g. XML or JSON. The traditional log
-message:
+The goal is to create a human-readable format for the message part of
+log entries that also makes the parameters in the log message reliably
+machine-readable. This is a task generally performed by markup
+languages. However, sllm is intended to be much less intrusive than,
+for example, XML or JSON. The traditional log message:
 
   2019/01/11 19:32:44 added 7 ⨉ Hat to shopping cart by John Doe
 
@@ -14,9 +14,10 @@ would become something like (depending on the choice of parameter names)
 
   2019/01/11 19:32:44 added `count:7` ⨉ `item:Hat` to shopping cart by `user:John Doe`
 
-Still human readable but also easy to be read by machines. Also machine reading
-would not break even when the message template changes the order of parameters.
-Careful choice of parameter names can make messages even more expressive.
+This is still readable by humans but can also be parsed reliably by
+machines. Machine reading would not fail even if the message template
+changes the order of the parameters. Careful choice of parameter names
+can make the messages even more meaningful.
 
 This package is no logging library—it provides functions to create and parse
 sllm messages.

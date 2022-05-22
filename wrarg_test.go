@@ -9,19 +9,19 @@ import (
 )
 
 func ExampleArgs() {
-	Expand(os.Stdout, "just an `what`", Args(nil, "example"))
+	Fprint(os.Stdout, "just an `what`", Argv("", "example"))
 	// Output:
 	// just an `what:example`
 }
 
 func ExampleArgs_undef() {
-	Expand(os.Stdout, "just an `what`: `miss`", Args([]byte("<undef>"), "example"))
+	Fprint(os.Stdout, "just an `what`: `miss`", Argv("<undef>", "example"))
 	// Output:
 	// just an `what:example`: `miss:<undef>`
 }
 
 func ExampleMap() {
-	Expand(os.Stdout, "just an `what`", Map(nil, ArgMap{
+	Fprint(os.Stdout, "just an `what`", Named("", map[string]any{
 		"what":  "example",
 		"dummy": false,
 	}))
@@ -30,7 +30,7 @@ func ExampleMap() {
 }
 
 func ExampleMap_undef() {
-	Expand(os.Stdout, "just an `what`: `miss`", Map([]byte("<undef>"), ArgMap{
+	Fprint(os.Stdout, "just an `what`: `miss`", Named("<undef>", map[string]any{
 		"what":  "example",
 		"dummy": false,
 	}))
@@ -40,8 +40,8 @@ func ExampleMap_undef() {
 
 func fuzzArgs[T any](t *testing.T, arg T) {
 	const tmpl = "Just `a` template"
-	var sb strings.Builder
-	n, err := Expand(&sb, tmpl, Args(nil, arg))
+	var sb bytes.Buffer
+	n, err := Bprint(&sb, tmpl, Argv("", arg))
 	if err != nil {
 		t.Error(err)
 	}
@@ -89,6 +89,6 @@ func BenchmarkSllmLog(b *testing.B) {
 	logr := log.New(&out, "stdlog", log.LstdFlags)
 	for i := 0; i < b.N; i++ {
 		out.Reset()
-		logr.Print(Expands("just an `what`: `miss`", Args([]byte("<undef>"), "example")))
+		logr.Print(Sprint("just an `what`: `miss`", Argv("<undef>", "example")))
 	}
 }

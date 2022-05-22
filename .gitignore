@@ -1,5 +1,6 @@
 *~
+*.test
 /coverage.out
-/sllm.test
 /cpu.prof
 /README.html
+/example/
