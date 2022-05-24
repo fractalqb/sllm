@@ -18,6 +18,12 @@ type wrArgv struct {
 
 func (ta wrArgv) wr(wr *ArgWriter, idx int, name string) (n int, err error) {
 	if idx >= 0 && idx < len(ta.argv) {
+		switch arg := ta.argv[idx].(type) {
+		case string:
+			return wr.WriteString(arg)
+		case int:
+			return wr.WriteInt(int64(arg))
+		}
 		return fmt.Fprint(wr, ta.argv[idx])
 	}
 	if ta.undef == "" {
@@ -48,6 +54,12 @@ type wrNamed struct {
 func (m wrNamed) wr(wr *ArgWriter, idx int, name string) (n int, err error) {
 	val, ok := m.args[name]
 	if ok {
+		switch arg := val.(type) {
+		case string:
+			return wr.WriteString(arg)
+		case int:
+			return wr.WriteInt(int64(arg))
+		}
 		return fmt.Fprint(wr, val)
 	}
 	if m.undef == "" {

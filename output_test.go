@@ -73,11 +73,11 @@ func ExamplePrint() {
 
 func ExamplePrint_explicitIndex() {
 	var writeTestArg = func(wr *ArgWriter, idx int, name string) (int, error) {
-		return fmt.Fprint(wr, idx)
+		return fmt.Fprintf(wr, "#%d", idx)
 	}
 	Fprint(os.Stdout, "`a`, `b:11`, `c`, `d:0`, `e`", writeTestArg)
 	// Output:
-	// `a:0`, `b:11`, `c:1`, `d:0`, `e:2`
+	// `a:#0`, `b:#11`, `c:#1`, `d:#0`, `e:#2`
 }
 
 func TestBprint_syntaxerror(t *testing.T) {
@@ -150,20 +150,31 @@ func BenchmarkPrintf(b *testing.B) {
 	}
 }
 
-func BenchmarkExpandArgs(b *testing.B) {
+func BenchmarkExpandZero(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
-		Fprint(&out,
+		Bprint(&out,
+			"added `count` x `item` to shopping cart by `user`",
+			func(w *ArgWriter, i int, n string) (int, error) { return 0, nil },
+		)
+	}
+}
+
+func BenchmarkExpandArgv(b *testing.B) {
+	var out bytes.Buffer
+	for i := 0; i < b.N; i++ {
+		out.Reset()
+		Bprint(&out,
 			"added `count` x `item` to shopping cart by `user`",
 			Argv("", 7, "`hat`", "John Doe"),
 		)
 	}
 }
 
-// BenchmarkExpandMap shall give an indication of the voverhad for map creation
+// BenchmarkExpandNamed shall give an indication of the voverhad for map creation
 // compared to the ExpandArgs function.
-func BenchmarkExpandMap(b *testing.B) {
+func BenchmarkExpandNamed(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()

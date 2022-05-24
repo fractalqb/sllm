@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -12,11 +13,7 @@ const (
 	nmSep   byte = ':'
 )
 
-var (
-	tEsc1    = []byte{tmplEsc}
-	nmSepStr = []byte{nmSep}
-	tokenStr = string([]byte{tmplEsc, nmSep})
-)
+var tokenStr = string([]byte{tmplEsc, nmSep})
 
 // ArgWriter is used by Expand to escape the argument when written as
 // a value of a parameter. It is assumed that a user of this package
@@ -39,6 +36,16 @@ func (w *ArgWriter) Write(p []byte) (n int, err error) {
 	buf = append(buf, p[ep:]...)
 	*w = buf
 	return len(buf) - n, nil
+}
+
+func (w *ArgWriter) WriteString(s string) (n int, err error) {
+	return w.Write([]byte(s))
+}
+
+func (w *ArgWriter) WriteInt(i int64) (n int, err error) {
+	l := len(*w)
+	*w = strconv.AppendInt(*w, i, 10)
+	return len(*w) - l, nil
 }
 
 // SyntaxError describes errors of the sllm template syntax in a message
