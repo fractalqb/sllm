@@ -6,6 +6,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
@@ -24,18 +25,16 @@ type ArgWriter []byte
 // Write escapes the content so that it can be reliably recognized in a sllm
 // message, i.e. replace each single backtick '`' with two backticks.
 func (w *ArgWriter) Write(p []byte) (n int, err error) {
-	buf := *w
-	n = len(buf)
+	n = len(*w)
 	ep := 0
 	for i, b := range p {
 		if b == tmplEsc {
-			buf = append(buf, p[ep:i+1]...)
+			*w = append(*w, p[ep:i+1]...)
 			ep = i
 		}
 	}
-	buf = append(buf, p[ep:]...)
-	*w = buf
-	return len(buf) - n, nil
+	*w = append(*w, p[ep:]...)
+	return len(*w) - n, nil
 }
 
 func (w *ArgWriter) WriteString(s string) (n int, err error) {
@@ -78,20 +77,28 @@ type ArgPrintFunc = func(wr *ArgWriter, idx int, name string) (int, error)
 
 // Fprint uses Expand to print the sllm message to wr.
 func Fprint(wr io.Writer, tmpl string, args ArgPrintFunc) (int, error) {
-	out, err := Expand(nil, tmpl, args)
+	out := byteSlicePool.Get().([]byte)
+	out, err := Expand(out[:0], tmpl, args)
 	if err != nil {
+		byteSlicePool.Put(out)
 		return 0, err
 	}
-	return wr.Write(out)
+	n, err := wr.Write(out)
+	byteSlicePool.Put(out)
+	return n, err
 }
 
 // Sprint uses Expand to return the sllm message as a string.
 func Sprint(tmpl string, args ArgPrintFunc) (string, error) {
-	out, err := Expand(nil, tmpl, args)
+	out := byteSlicePool.Get().([]byte)
+	out, err := Expand(out[:0], tmpl, args)
 	if err != nil {
+		byteSlicePool.Put(out)
 		return "", err
 	}
-	return string(out), nil
+	tmp := string(out)
+	byteSlicePool.Put(out)
+	return tmp, nil
 }
 
 // Bprint uses Expand to print the sllm message to an in-memory buffer. Bprint
@@ -104,6 +111,8 @@ func Bprint(wr *bytes.Buffer, tmpl string, args ArgPrintFunc) (int, error) {
 	wr.Reset()
 	return wr.Write(out)
 }
+
+var byteSlicePool = sync.Pool{New: func() any { return make([]byte, 128) }}
 
 // Expand appends a message to buf by expanding all arguments of the given
 // template tmpl. The actual process of expanding an argument is left to
@@ -154,34 +163,32 @@ func Expand(buf []byte, tmpl string, args ArgPrintFunc) ([]byte, error) {
 }
 
 func parseArg(tmpl string) (argName string, argIdx, parseLen int, err error) {
-	sep := strings.IndexAny(tmpl, tokenStr)
-	if sep < 0 {
+	parseLen = strings.IndexByte(tmpl, tmplEsc)
+	if parseLen < 0 {
 		return "", -1, 0, errors.New("unterminated argument")
 	}
-	if tmpl[sep] == tmplEsc {
-		return tmpl[:sep], -1, sep + 1, nil
-	}
-	argName = tmpl[:sep]
-	if sep++; sep >= len(tmpl) {
-		return "", -1, 0, errors.New("unterminated argument")
-	}
-	b := tmpl[sep]
-	if b == tmplEsc {
-		return argName, -1, sep, errors.New("empty explicit index")
-	}
-	if b < '0' || b > '9' {
-		return argName, -1, sep, errors.New("not a digit in explicit arg index")
-	}
-	argIdx = int(b) - '0'
-	for sep++; sep < len(tmpl); sep++ {
-		b := tmpl[sep]
-		switch {
-		case b == tmplEsc:
-			return argName, argIdx, sep + 1, nil
-		case b < '0' || b > '9':
-			return argName, -1, sep, errors.New("not a digit in explicit arg index")
+	nms := strings.IndexByte(tmpl[:parseLen], nmSep)
+	switch {
+	case nms < 0:
+		argName = tmpl[:parseLen]
+		argIdx = -1
+	case nms > 0:
+		argName = tmpl[:nms]
+		nms++
+		if nms == parseLen {
+			return argName, -1, parseLen, errors.New("empty explicit index")
 		}
-		argIdx = 10*argIdx + int(b) - '0'
+		argIdx = 0
+		for nms < parseLen {
+			b := tmpl[nms]
+			if b < '0' || b > '9' {
+				return argName, -1, nms, errors.New("not a digit in explicit arg index")
+			}
+			argIdx = 10*argIdx + int(b) - '0'
+			nms++
+		}
+	default:
+		return "", -1, 0, errors.New("empty argument name")
 	}
-	return argName, -1, 0, errors.New("unterminated argument")
+	return argName, argIdx, parseLen + 1, nil
 }

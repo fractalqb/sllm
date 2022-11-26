@@ -114,6 +114,9 @@ func TestBprint_syntaxerror(t *testing.T) {
 	t.Run("non-numeric explicit index", func(t *testing.T) {
 		test(t, "foo `ba:1x2` baz", 9, "not a digit in explicit arg index")
 	})
+	// t.Run("empty name", func(t *testing.T) {
+	// 	test(t, "foo `:7` baz", 5, "empty argument name")
+	// })
 }
 
 func TestExtractParams(t *testing.T) {
