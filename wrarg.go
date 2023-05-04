@@ -22,7 +22,11 @@ func (ta wrArgv) wr(wr *ArgWriter, idx int, name string) (n int, err error) {
 		case string:
 			return wr.WriteString(arg)
 		case int:
-			return wr.WriteInt(int64(arg))
+			return wr.WriteInt(arg)
+		case timeFormatter:
+			return wr.WriteTime(arg.t, arg.fmt)
+		case int64:
+			return wr.WriteInt64(int64(arg))
 		}
 		return fmt.Fprint(wr, ta.argv[idx])
 	}
@@ -58,7 +62,11 @@ func (m wrNamed) wr(wr *ArgWriter, idx int, name string) (n int, err error) {
 		case string:
 			return wr.WriteString(arg)
 		case int:
-			return wr.WriteInt(int64(arg))
+			return wr.WriteInt(arg)
+		case timeFormatter:
+			return wr.WriteTime(arg.t, arg.fmt)
+		case int64:
+			return wr.WriteInt64(int64(arg))
 		}
 		return fmt.Fprint(wr, val)
 	}

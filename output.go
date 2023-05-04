@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"strconv"
 	"strings"
 	"sync"
 )
@@ -13,39 +12,6 @@ const (
 	tmplEsc byte = '`'
 	nmSep   byte = ':'
 )
-
-var tokenStr = string([]byte{tmplEsc, nmSep})
-
-// ArgWriter is used by Expand to escape the argument when written as
-// a value of a parameter. It is assumed that a user of this package
-// should not use this type directly. However the type will be needed
-// if one wants to provide an own ArgPrintFunc.
-type ArgWriter []byte
-
-// Write escapes the content so that it can be reliably recognized in a sllm
-// message, i.e. replace each single backtick '`' with two backticks.
-func (w *ArgWriter) Write(p []byte) (n int, err error) {
-	n = len(*w)
-	ep := 0
-	for i, b := range p {
-		if b == tmplEsc {
-			*w = append(*w, p[ep:i+1]...)
-			ep = i
-		}
-	}
-	*w = append(*w, p[ep:]...)
-	return len(*w) - n, nil
-}
-
-func (w *ArgWriter) WriteString(s string) (n int, err error) {
-	return w.Write([]byte(s))
-}
-
-func (w *ArgWriter) WriteInt(i int64) (n int, err error) {
-	l := len(*w)
-	*w = strconv.AppendInt(*w, i, 10)
-	return len(*w) - l, nil
-}
 
 // SyntaxError describes errors of the sllm template syntax in a message
 // template.

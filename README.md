@@ -192,3 +192,29 @@ many advantages this gives room for efficient implementations. Part of
 this repository is a [Go
 implementation](https://godoc.org/github.com/fractalqb/sllm) that does
 not strive so much for efficiency but for hackability.
+
+## Benchmarks
+Benchmarks from https://github.com/fractalqb/go-sllm-benchmark – go there for
+details.
+
+Ran on: `cpu: AMD Ryzen 7 5800X 8-Core Processor`
+
+### Writing Messages
+```
+BenchmarkSllmExpand-16      7523715	   208.0 ns/op   24 B/op   1 allocs/op
+BenchmarkSllmByteBuffer-16  6041648	   191.7 ns/op   24 B/op   1 allocs/op
+BenchmarkSllmPrint-16       4525854	   272.6 ns/op   48 B/op   2 allocs/op
+BenchmarkGoJSONdynamic-16    662958	  1871   ns/op  760 B/op  15 allocs/op
+BenchmarkGoJSONstatic-16    2580258	   487.6 ns/op  224 B/op   2 allocs/op
+BenchmarkJSONiterDynamic-16  700167	  1705   ns/op  950 B/op  14 allocs/op
+BenchmarkJSONiterStatic-16  2453310	   469.8 ns/op  224 B/op   2 allocs/op
+```
+
+### Parsing Messages
+```
+BenchmarkSllmParseSynamic-16        2813646   427.9 ns/op  654 B/op   6 allocs/op
+BenchmarkGoJSONparseDynamic-16       380229  3296   ns/op  560 B/op	28 allocs/op
+BenchmarkGoJSONparseStatic-16        932494  1940   ns/op  296 B/op	 9 allocs/op
+BenchmarkGoJSONiterParseDynamic-16   985543  1285   ns/op  344 B/op	24 allocs/op
+BenchmarkGoJSONiterParseStatic-16   2051349   601.1 ns/op  112 B/op	 9 allocs/op
+```
