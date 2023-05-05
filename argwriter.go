@@ -116,20 +116,21 @@ func itoa(buf []byte, i, w int) []byte {
 }
 
 func uitoa(buf []byte, i, w int) []byte {
-	var tmp [20]byte
+	var tmp = [20]byte{
+		'0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+		'0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+	}
 	wp := 19
+	w = 20 - w
 	for i > 9 {
 		q := i / 10
 		tmp[wp] = byte('0' + i - 10*q)
 		wp--
-		w--
 		i = q
 	}
 	tmp[wp] = byte('0' + i)
-	for w > 1 {
-		wp--
-		tmp[wp] = '0'
-		w--
+	if wp > w {
+		wp = w
 	}
 	return append(buf, tmp[wp:]...)
 }

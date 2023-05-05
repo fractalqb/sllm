@@ -43,15 +43,6 @@ func ExampleArgWriter() {
 	// b``az
 }
 
-func BenchmarkArgWriter(b *testing.B) {
-	txt := []byte("this `is a funny ``text with `backtik")
-	var pw ArgWriter
-	for i := 0; i < b.N; i++ {
-		pw = pw[:0]
-		pw.Write(txt)
-	}
-}
-
 func ExamplePrint() {
 	var writeTestArg = func(wr *ArgWriter, idx int, name string) (int, error) {
 		return fmt.Fprintf(wr, "#%d/'%s'", idx, name)
@@ -78,6 +69,12 @@ func ExamplePrint_explicitIndex() {
 	Fprint(os.Stdout, "`a`, `b:11`, `c`, `d:0`, `e`", writeTestArg)
 	// Output:
 	// `a:#0`, `b:#11`, `c:#1`, `d:#0`, `e:#2`
+}
+
+func ExamplePrint_argError() {
+	Fprint(os.Stdout, "`argok` but `notok`", Argv("", 4711))
+	// Output:
+	// `argok:4711` but `notok!(illegal argument index 1)`
 }
 
 func TestBprint_syntaxerror(t *testing.T) {

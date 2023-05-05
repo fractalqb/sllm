@@ -2,13 +2,12 @@ package sllm
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type IllegalArgIndex int
 
 func (err IllegalArgIndex) Error() string {
-	return strconv.Itoa(int(err))
+	return fmt.Sprintf("illegal argument index %d", err)
 }
 
 type wrArgv struct {
@@ -26,7 +25,7 @@ func (ta wrArgv) wr(wr *ArgWriter, idx int, name string) (n int, err error) {
 		case timeFormatter:
 			return wr.WriteTime(arg.t, arg.fmt)
 		case int64:
-			return wr.WriteInt64(int64(arg))
+			return wr.WriteInt64(arg)
 		}
 		return fmt.Fprint(wr, ta.argv[idx])
 	}
@@ -66,7 +65,7 @@ func (m wrNamed) wr(wr *ArgWriter, idx int, name string) (n int, err error) {
 		case timeFormatter:
 			return wr.WriteTime(arg.t, arg.fmt)
 		case int64:
-			return wr.WriteInt64(int64(arg))
+			return wr.WriteInt64(arg)
 		}
 		return fmt.Fprint(wr, val)
 	}

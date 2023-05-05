@@ -10,7 +10,8 @@ import (
 
 const (
 	tmplEsc byte = '`'
-	nmSep   byte = ':'
+	nameSep byte = ':'
+	argErr  byte = '!'
 )
 
 // SyntaxError describes errors of the sllm template syntax in a message
@@ -113,14 +114,19 @@ func Expand(buf []byte, tmpl string, args ArgPrintFunc) ([]byte, error) {
 			return buf, errTmpl
 		}
 		buf = append(buf, tmpl[:i+len(argName)]...)
-		buf = append(buf, nmSep)
+		nmSepIdx := len(buf)
+		buf = append(buf, nameSep)
 		if argIdx < 0 {
 			lastIdx++
 			argIdx = lastIdx
 		}
 		_, err = args((*ArgWriter)(&buf), argIdx, argName)
 		if err != nil {
-			return buf, err
+			buf = buf[:nmSepIdx+1]
+			buf[nmSepIdx] = argErr
+			buf = append(buf, '(')
+			(*ArgWriter)(&buf).WriteString(err.Error())
+			buf = append(buf, ')')
 		}
 		buf = append(buf, tmplEsc)
 		tmpl = tmpl[i+pLen:]
@@ -133,7 +139,7 @@ func parseArg(tmpl string) (argName string, argIdx, parseLen int, err error) {
 	if parseLen < 0 {
 		return "", -1, 0, errors.New("unterminated argument")
 	}
-	nms := strings.IndexByte(tmpl[:parseLen], nmSep)
+	nms := strings.IndexByte(tmpl[:parseLen], nameSep)
 	switch {
 	case nms < 0:
 		argName = tmpl[:parseLen]
