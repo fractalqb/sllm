@@ -13,15 +13,19 @@ func ExampleTimeFormat() {
 	buf.WriteTime(t, Tdefault)
 	fmt.Println(string(buf))
 	buf = buf[:0]
-	buf.WriteTime(t, Tdate|Tyear|Tmicros)
+	buf.WriteTime(t, Tyear|Tmicros)
 	fmt.Println(string(buf))
 	buf = buf[:0]
-	buf.WriteTime(t, Tdate|Tyear|Tmillis)
+	buf.WriteTime(t, Tyear|Tmillis)
+	fmt.Println(string(buf))
+	buf = buf[:0]
+	buf.WriteTime(t, Tyear|Tweekday|Tmillis)
 	fmt.Println(string(buf))
 	// Output:
-	// May 04 21:43:01
-	// 2023 May 04 21:43:01.002003
-	// 2023 May 04 21:43:01.002
+	// 05-04 Th 21:43:01
+	// 2023-05-04 21:43:01.002003
+	// 2023-05-04 21:43:01.002
+	// 2023-05-04 Th 21:43:01.002
 }
 
 func ExampleArgWriter_Write() {
@@ -82,5 +86,4 @@ func BenchmarkSllmExpand(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		buf, _ = Expand(buf[:0], sllmForm, sllmArgs)
 	}
-	_ = buf[1]
 }

@@ -1,4 +1,4 @@
-module git.fractalqb.de/fractalqb/sllm/v2
+module git.fractalqb.de/fractalqb/sllm/v3
 
 go 1.18
 

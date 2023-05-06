@@ -150,7 +150,7 @@ func BenchmarkPrintf(b *testing.B) {
 	}
 }
 
-func BenchmarkExpandZero(b *testing.B) {
+func BenchmarkBprintZero(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
@@ -161,7 +161,7 @@ func BenchmarkExpandZero(b *testing.B) {
 	}
 }
 
-func BenchmarkExpandArgv(b *testing.B) {
+func BenchmarkBprintArgv(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()
@@ -172,9 +172,9 @@ func BenchmarkExpandArgv(b *testing.B) {
 	}
 }
 
-// BenchmarkExpandNamed shall give an indication of the voverhad for map creation
+// BenchmarkBprintNamed shall give an indication of the voverhad for map creation
 // compared to the ExpandArgs function.
-func BenchmarkExpandNamed(b *testing.B) {
+func BenchmarkBprintNamed(b *testing.B) {
 	var out bytes.Buffer
 	for i := 0; i < b.N; i++ {
 		out.Reset()

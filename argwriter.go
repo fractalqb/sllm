@@ -62,14 +62,16 @@ type TimeFormat int
 func (tf TimeFormat) Format(t time.Time) timeFormatter { return timeFormatter{tf, t} }
 
 const (
-	Tdate TimeFormat = 1 << iota
+	TUTC TimeFormat = 1 << iota
+	Tdate
+	Tweekday
 	Tyear
-	TUTC
+	Tclock
 	Tmillis
 	Tmicros
 )
 
-const Tdefault = Tdate
+const Tdefault = Tdate | Tweekday | Tclock
 
 type timeFormatter struct {
 	fmt TimeFormat
@@ -80,29 +82,39 @@ func fmtTs(buf []byte, t time.Time, fmt TimeFormat) []byte {
 	if fmt&TUTC != 0 {
 		t = t.UTC()
 	}
-	if fmt&Tdate != 0 {
+
+	if fmt&(Tdate|Tyear|Tweekday) != 0 {
 		ye, mo, dy := t.Date()
 		if fmt&Tyear != 0 {
 			buf = uitoa(buf, ye, 4)
+			buf = append(buf, '-')
+		}
+		buf = uitoa(buf, int(mo), 2)
+		buf = append(buf, '-')
+		buf = uitoa(buf, dy, 2)
+		if fmt&Tweekday != 0 {
+			buf = append(buf, ' ')
+			buf = append(buf, t.Weekday().String()[:2]...)
+		}
+		if fmt&(Tclock|Tmillis|Tmicros) != 0 {
 			buf = append(buf, ' ')
 		}
-		buf = append(buf, mo.String()[:3]...)
-		buf = append(buf, ' ')
-		buf = uitoa(buf, dy, 2)
-		buf = append(buf, ' ')
 	}
-	ho, mi, sc := t.Clock()
-	buf = uitoa(buf, ho, 2)
-	buf = append(buf, ':')
-	buf = uitoa(buf, mi, 2)
-	buf = append(buf, ':')
-	buf = uitoa(buf, sc, 2)
-	if fmt&Tmicros != 0 {
-		buf = append(buf, '.')
-		buf = uitoa(buf, t.Nanosecond()/1000, 6)
-	} else if fmt&Tmillis != 0 {
-		buf = append(buf, '.')
-		buf = uitoa(buf, t.Nanosecond()/1000000, 3)
+
+	if fmt&(Tclock|Tmillis|Tmicros) != 0 {
+		ho, mi, sc := t.Clock()
+		buf = uitoa(buf, ho, 2)
+		buf = append(buf, ':')
+		buf = uitoa(buf, mi, 2)
+		buf = append(buf, ':')
+		buf = uitoa(buf, sc, 2)
+		if fmt&Tmicros != 0 {
+			buf = append(buf, '.')
+			buf = uitoa(buf, t.Nanosecond()/1000, 6)
+		} else if fmt&Tmillis != 0 {
+			buf = append(buf, '.')
+			buf = uitoa(buf, t.Nanosecond()/1000000, 3)
+		}
 	}
 	return buf
 }
@@ -120,8 +132,8 @@ func uitoa(buf []byte, i, w int) []byte {
 		'0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
 		'0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
 	}
-	wp := 19
-	w = 20 - w
+	wp := len(tmp) - 1
+	w = len(tmp) - w
 	for i > 9 {
 		q := i / 10
 		tmp[wp] = byte('0' + i - 10*q)
