@@ -7,6 +7,16 @@ import (
 	"strings"
 )
 
+// Parameters extracs the parameter names from template tmpl and appends them
+// to a.
+func Parameters(tmpl string, a []string) ([]string, error) {
+	_, err := Append(nil, tmpl, func(to []byte, idx int, n string) ([]byte, error) {
+		a = append(a, n)
+		return to[:0], nil
+	})
+	return a, err
+}
+
 // Parse parses a sllm message create by Expand and calls onArg for every
 // `name:value` parameter it finds in the message. When a non-nil buffer is
 // passed as tmpl Parse will also reconstruct the original template into the
@@ -105,16 +115,4 @@ func ParseMap(msg string, tmpl *bytes.Buffer) (map[string][]any, error) {
 		return nil
 	})
 	return res, err
-}
-
-// ExtractParams extracs the parameter names from template tmpl and appends them
-// to appendTo.
-func ExtractParams(appendTo []string, tmpl string) ([]string, error) {
-	_, err := Expand(nil, tmpl,
-		func(wr *ArgWriter, idx int, name string) (int, error) {
-			appendTo = append(appendTo, name)
-			return len(name), nil
-		},
-	)
-	return appendTo, err
 }

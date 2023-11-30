@@ -1,8 +1,8 @@
 # sllm – Structured Logging Lightweight Markup
-[![Build Status](https://travis-ci.org/fractalqb/sllm/v2.svg)](https://travis-ci.org/fractalqb/sllm/v2)
-[![codecov](https://codecov.io/gh/fractalqb/sllm/branch/master/graph/badge.svg)](https://codecov.io/gh/fractalqb/sllm/v2)
-[![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/sllm/v2)](https://goreportcard.com/report/github.com/fractalqb/sllm/v2)
-[![Go Reference](https://pkg.go.dev/badge/git.fractalqb.de/fractalqb/sllm/v2.svg)](https://pkg.go.dev/git.fractalqb.de/fractalqb/sllm/v2)
+[![Build Status](https://travis-ci.org/fractalqb/sllm/v3.svg)](https://travis-ci.org/fractalqb/sllm/v3)
+[![codecov](https://codecov.io/gh/fractalqb/sllm/branch/master/graph/badge.svg)](https://codecov.io/gh/fractalqb/sllm/v3)
+[![Go Report Card](https://goreportcard.com/badge/github.com/fractalqb/sllm/v3)](https://goreportcard.com/report/github.com/fractalqb/sllm/v3)
+[![Go Reference](https://pkg.go.dev/badge/git.fractalqb.de/fractalqb/sllm/v3.svg)](https://pkg.go.dev/git.fractalqb.de/fractalqb/sllm/v3)
 
 A human readable approach to make parameters from an actual log
 message machine-readable.
@@ -17,7 +17,7 @@ the Go reference docs. For a Go logging lib that uses _sllm_ see
 __Usage:__
 
 ```
-import "git.fractalqb.de/fractalqb/sllm/v2"
+import "git.fractalqb.de/fractalqb/sllm/v3"
 ```
 
 ## Rationale
@@ -27,11 +27,11 @@ be able to be _reliably processed automatically_, i.e. to extract
 relevant data from the entry. Current technologies force a decision
 for one of the two requirements.
 
-To decide for either human readability or machine processing means
-that significant cutbacks are made to the other requirement. _sllm_
-picks up the idea of "markup", which is typically intended to bring
-human readability and machine processing together. At the same time,
-_sllm_ remains simple and unobtrusive—unlike XML or even JSON.
+To decide for either human readability or machine processing means that
+significant cutbacks are made to the other requirement. _sllm_ picks up the idea
+of "[markup](https://en.wikipedia.org/wiki/Markup_language)", which is typically
+intended to bring human readability and machine processing together. At the same
+time, _sllm_ remains simple and unobtrusive—unlike XML or even JSON.
 
 Let's take the example of a standard log message that states some
 business relevant event and might be generated from the following
@@ -59,10 +59,10 @@ a visually pleasant message that is rather good to read or you get
 output that is easy to be consumed by computers. Currently one has
 to make a choice. But, can't we have both in one?
 
-**Note** that _sllm_ focuses on the log message.  We do not propose how
-to handle other pieces of information! So lets have a look what _sllm_
-would do with some decent log formats. We use `↩/↪` only to avoid very
-long lines on this page. In real logs things would be on one line!
+**Note** that _sllm_ focuses on the log message.  We do not propose how to
+handle other pieces of information! So lets have a look what _sllm_ would do
+with some decent log formats. We use `↩/↪` only to avoid very long lines on this
+page. In a real log, everything would be on a single line!
 
 ### Classic log output
 
@@ -201,20 +201,20 @@ Ran on: `cpu: AMD Ryzen 7 5800X 8-Core Processor`
 
 ### Writing Messages
 ```
-BenchmarkSllmExpand-16      7523715	   208.0 ns/op   24 B/op   1 allocs/op
-BenchmarkSllmByteBuffer-16  6041648	   191.7 ns/op   24 B/op   1 allocs/op
-BenchmarkSllmPrint-16       4525854	   272.6 ns/op   48 B/op   2 allocs/op
-BenchmarkGoJSONdynamic-16    662958	  1871   ns/op  760 B/op  15 allocs/op
-BenchmarkGoJSONstatic-16    2580258	   487.6 ns/op  224 B/op   2 allocs/op
-BenchmarkJSONiterDynamic-16  700167	  1705   ns/op  950 B/op  14 allocs/op
-BenchmarkJSONiterStatic-16  2453310	   469.8 ns/op  224 B/op   2 allocs/op
+BenchmarkSllmAppend-16       	10492954  116.0 ns/op    0 B/op   0 allocs/op
+BenchmarkSllmByteBuffer-16   	 8785130  119.2 ns/op    0 B/op   0 allocs/op
+BenchmarkSllmStringBuilder-16	 3096673  410.0 ns/op  360 B/op   6 allocs/op
+BenchmarkGoJSONDynamic-16    	  659040   1644 ns/op  760 B/op  15 allocs/op
+BenchmarkGoJSONStatic-16     	 2714055  437.3 ns/op  224 B/op   2 allocs/op
+BenchmarkJSONiterDynamic-16  	  712359   1687 ns/op  950 B/op  14 allocs/op
+BenchmarkJSONiterStatic-16   	 2494083  488.5 ns/op  224 B/op   2 allocs/op
 ```
 
 ### Parsing Messages
 ```
-BenchmarkSllmParseSynamic-16        2813646   427.9 ns/op  654 B/op   6 allocs/op
-BenchmarkGoJSONparseDynamic-16       380229  3296   ns/op  560 B/op	28 allocs/op
-BenchmarkGoJSONparseStatic-16        932494  1940   ns/op  296 B/op	 9 allocs/op
-BenchmarkGoJSONiterParseDynamic-16   985543  1285   ns/op  344 B/op	24 allocs/op
-BenchmarkGoJSONiterParseStatic-16   2051349   601.1 ns/op  112 B/op	 9 allocs/op
+BenchmarkSllmParseDynamic-16       1621568   644.9 ns/op  693 B/op  10 allocs/op
+BenchmarkGoJSONparseDynamic-16      545088  2977   ns/op  560 B/op  28 allocs/op
+BenchmarkGoJSONparseStatic-16       657501  1935   ns/op  296 B/op   9 allocs/op
+BenchmarkGoJSONiterParseDynamic-16  916117  1262   ns/op  344 B/op  24 allocs/op
+BenchmarkGoJSONiterParseStatic-16  2122716   551.0 ns/op  112 B/op   9 allocs/op
 ```
