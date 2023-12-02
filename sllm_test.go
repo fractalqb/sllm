@@ -76,7 +76,7 @@ const (
 )
 
 var (
-	testNow  = Tdefault.Fmt(time.Date(2023, 11, 27, 21, 30, 00, 0, time.UTC))
+	testNow  = TDefault.Fmt(time.Date(2023, 11, 27, 21, 30, 00, 0, time.UTC))
 	outBytes int
 )
 

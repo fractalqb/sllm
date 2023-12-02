@@ -8,22 +8,36 @@ import (
 )
 
 func ExampleTimeFormat() {
-	t := time.Date(2023, 05, 04, 21, 43, 1, 2003000, time.UTC)
+	tz := time.FixedZone("West", -int((3 * time.Hour).Seconds()))
+	t := time.Date(2023, 05, 04, 21, 43, 1, 2003000, tz)
 
-	os.Stdout.Write(Tdefault.Fmt(t).AppendSllm(nil))
-	fmt.Println()
-	os.Stdout.Write((Tyear | Tmicros).Fmt(t).AppendSllm(nil))
-	fmt.Println()
-	os.Stdout.Write((Tyear | Tmillis).Fmt(t).AppendSllm(nil))
-	fmt.Println()
-	os.Stdout.Write((Tyear | Tweekday | Tmillis).Fmt(t).AppendSllm(nil))
-	fmt.Println()
+	os.Stdout.Write(TimeFormat(0).Fmt(t).AppendSllm(nil))
+	fmt.Print("\n\n")
 
+	os.Stdout.Write(TUTC.Fmt(t).AppendSllm(nil))
+	fmt.Println()
+	os.Stdout.Write(TNoDate.Fmt(t).AppendSllm(nil))
+	fmt.Println()
+	os.Stdout.Write(TNoWeekday.Fmt(t).AppendSllm(nil))
+	fmt.Println()
+	os.Stdout.Write(TYear.Fmt(t).AppendSllm(nil))
+	fmt.Println()
+	os.Stdout.Write(TNoClock.Fmt(t).AppendSllm(nil))
+	fmt.Println()
+	os.Stdout.Write(TMillis.Fmt(t).AppendSllm(nil))
+	fmt.Println()
+	os.Stdout.Write(TMicros.Fmt(t).AppendSllm(nil))
+	fmt.Println()
 	// Output:
-	// 05-04 Th 21:43:01
-	// 2023-05-04 21:43:01.002003
-	// 2023-05-04 21:43:01.002
-	// 2023-05-04 Th 21:43:01.002
+	// 05-04 Th 21:43:01-03
+	//
+	// 05-05 Fr 00:43:01
+	// 21:43:01-03
+	// 05-04 21:43:01-03
+	// 2023-05-04 Th 21:43:01-03
+	// 05-04 Th -03
+	// 05-04 Th 21:43:01.002-03
+	// 05-04 Th 21:43:01.002003-03
 }
 
 func BenchmarkExpand_StdTime(b *testing.B) {
@@ -35,7 +49,7 @@ func BenchmarkExpand_StdTime(b *testing.B) {
 }
 
 func BenchmarkExpand_TimeFormat(b *testing.B) {
-	t := Tdefault.Fmt(time.Date(2023, 11, 27, 21, 30, 00, 0, time.UTC))
+	t := TDefault.Fmt(time.Date(2023, 11, 27, 21, 30, 00, 0, time.UTC))
 	buf := make([]byte, 64)
 	for i := 0; i < b.N; i++ {
 		buf, _ = Append(buf[:0], "`its`", IdxArgs(t))
