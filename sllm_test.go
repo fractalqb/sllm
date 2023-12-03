@@ -114,7 +114,7 @@ func ExampleAppend_testArgsN() {
 	os.Stdout.Write(buf)
 	fmt.Println()
 	// Output:
-	// `service:rsyslog`: Sent `signal:SIGHUP` to main `process:1611` (`name:rsyslogd`) on client request `at:11-27 Mo 21:30:00`.
+	// `service:rsyslog`: Sent `signal:SIGHUP` to main `process:1611` (`name:rsyslogd`) on client request `at:11-27 Mo 21:30:00+00`.
 }
 
 func BenchmarkAppend_testArgsN(b *testing.B) {
@@ -134,7 +134,7 @@ func ExampleAppend_IdxArgs() {
 	os.Stdout.Write(buf)
 	fmt.Println()
 	// Output:
-	// `service:rsyslog`: Sent `signal:SIGHUP` to main `process:1611` (`name:rsyslogd`) on client request `at:11-27 Mo 21:30:00`.
+	// `service:rsyslog`: Sent `signal:SIGHUP` to main `process:1611` (`name:rsyslogd`) on client request `at:11-27 Mo 21:30:00+00`.
 }
 
 func BenchmarkAppend_IdxArgs(b *testing.B) {
@@ -173,7 +173,7 @@ func ExampleAppend_NmArgs() {
 	os.Stdout.Write(buf)
 	fmt.Println()
 	// Output:
-	// `service:rsyslog`: Sent `signal:SIGHUP` to main `process:1611` (`name:rsyslogd`) on client request `at:11-27 Mo 21:30:00`.
+	// `service:rsyslog`: Sent `signal:SIGHUP` to main `process:1611` (`name:rsyslogd`) on client request `at:11-27 Mo 21:30:00+00`.
 }
 
 func BenchmarkAppend_NmArgs(b *testing.B) {

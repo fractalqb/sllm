@@ -12,7 +12,7 @@ log messages human- and machine-readable at the same time. There are
 [some
 examples](https://pkg.go.dev/git.fractalqb.de/fractalqb/sllm#pkg-examples) in
 the Go reference docs. For a Go logging lib that uses _sllm_ see
-[qbsllm](https://github.com/fractalqb/qblog).
+[qblog](https://github.com/fractalqb/qblog) ≥v0.13.0.
 
 __Usage:__
 
@@ -201,13 +201,13 @@ Ran on: `cpu: AMD Ryzen 7 5800X 8-Core Processor`
 
 ### Writing Messages
 ```
-BenchmarkSllmAppend-16       	10492954  116.0 ns/op    0 B/op   0 allocs/op
-BenchmarkSllmByteBuffer-16   	 8785130  119.2 ns/op    0 B/op   0 allocs/op
-BenchmarkSllmStringBuilder-16	 3096673  410.0 ns/op  360 B/op   6 allocs/op
-BenchmarkGoJSONDynamic-16    	  659040   1644 ns/op  760 B/op  15 allocs/op
-BenchmarkGoJSONStatic-16     	 2714055  437.3 ns/op  224 B/op   2 allocs/op
-BenchmarkJSONiterDynamic-16  	  712359   1687 ns/op  950 B/op  14 allocs/op
-BenchmarkJSONiterStatic-16   	 2494083  488.5 ns/op  224 B/op   2 allocs/op
+BenchmarkSllmAppend-16       	10492954   116.0 ns/op    0 B/op   0 allocs/op
+BenchmarkSllmByteBuffer-16   	 8785130   119.2 ns/op    0 B/op   0 allocs/op
+BenchmarkSllmStringBuilder-16	 3096673   410.0 ns/op  360 B/op   6 allocs/op
+BenchmarkGoJSONDynamic-16    	  659040  1644   ns/op  760 B/op  15 allocs/op
+BenchmarkGoJSONStatic-16     	 2714055   437.3 ns/op  224 B/op   2 allocs/op
+BenchmarkJSONiterDynamic-16  	  712359  1687   ns/op  950 B/op  14 allocs/op
+BenchmarkJSONiterStatic-16   	 2494083   488.5 ns/op  224 B/op   2 allocs/op
 ```
 
 ### Parsing Messages
