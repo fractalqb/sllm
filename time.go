@@ -5,9 +5,15 @@ import (
 	"time"
 )
 
-type TimeFormat int
+type TimeFormat int32
 
 func (tf TimeFormat) Fmt(t time.Time) timeFormatter { return timeFormatter{tf, t} }
+
+func (tf TimeFormat) Append(buf []byte, t time.Time) []byte {
+	return tf.Fmt(t).AppendSllm(buf)
+}
+
+// TODO: TimeFormat.Parse()
 
 const (
 	TUTC TimeFormat = 1 << iota
