@@ -57,12 +57,16 @@ func AppendArg(to []byte, v any) []byte {
 		return strconv.AppendInt(to, int64(a), 10)
 	case int64:
 		return strconv.AppendInt(to, a, 10)
+	case bool:
+		return strconv.AppendBool(to, a)
+	case float64:
+		return strconv.AppendFloat(to, a, 'f', -1, 64)
+	case float32:
+		return strconv.AppendFloat(to, float64(a), 'f', -1, 32)
 	case uint:
 		return strconv.AppendUint(to, uint64(a), 10)
 	case uint64:
 		return strconv.AppendUint(to, a, 10)
-	case bool:
-		return strconv.AppendBool(to, a)
 	case fmt.Stringer:
 		return EscString(to, a.String())
 	default:
