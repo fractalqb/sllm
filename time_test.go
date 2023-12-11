@@ -40,7 +40,16 @@ func ExampleTimeFormat() {
 	// 05-04 Th 21:43:01.002003-03
 }
 
-func BenchmarkExpand_StdTime(b *testing.B) {
+func TestTimeFormat_Append(t *testing.T) {
+	tz := time.FixedZone("West", -int((3 * time.Hour).Seconds()))
+	ts := time.Date(2023, 05, 04, 21, 43, 1, 2003000, tz)
+	out := TMicros.Append(nil, ts)
+	if s := string(out); s != "05-04 Th 21:43:01.002003-03" {
+		t.Fatalf("unexpected time string '%s'", s)
+	}
+}
+
+func BenchmarkAppend_StdTime(b *testing.B) {
 	t := time.Date(2023, 11, 27, 21, 30, 00, 0, time.UTC)
 	buf := make([]byte, 64)
 	for i := 0; i < b.N; i++ {
@@ -48,7 +57,7 @@ func BenchmarkExpand_StdTime(b *testing.B) {
 	}
 }
 
-func BenchmarkExpand_TimeFormat(b *testing.B) {
+func BenchmarkAppend_TimeFormat(b *testing.B) {
 	t := TDefault.Fmt(time.Date(2023, 11, 27, 21, 30, 00, 0, time.UTC))
 	buf := make([]byte, 64)
 	for i := 0; i < b.N; i++ {

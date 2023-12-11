@@ -14,7 +14,7 @@ type Appender interface {
 func IdxArgs(args ...any) func([]byte, int, string) ([]byte, error) {
 	return func(buf []byte, i int, n string) ([]byte, error) {
 		if i < 0 || i >= len(args) {
-			return buf, MissingArg{Index: i, Name: n}
+			return buf, fmt.Errorf("missing argument %d '%s'", i, n)
 		}
 		return AppendArg(buf, args[i]), nil
 	}
@@ -34,7 +34,7 @@ func NmArgs(args map[string]any) func([]byte, int, string) ([]byte, error) {
 		if a, ok := args[n]; ok {
 			return AppendArg(buf, a), nil
 		}
-		return buf, MissingArg{Index: i, Name: n}
+		return buf, fmt.Errorf("missing argument %d '%s'", i, n)
 	}
 }
 

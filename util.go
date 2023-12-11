@@ -21,7 +21,7 @@ func Fprint(w io.Writer, tmpl string, args ArgsFunc) (int, error) {
 		return buf.Write(tmp)
 	}
 	tmp, err := Append(nil, tmpl, args)
-	if err != nil {
+	if err != nil && !errors.Is(err, ArgErrors{}) {
 		return 0, err
 	}
 	return w.Write(tmp)
@@ -37,12 +37,12 @@ func String(tmpl string, args ArgsFunc) (string, error) {
 }
 
 func ErrorIdx(tmpl string, args ...any) error {
-	return ErrorIdx(tmpl, IdxArgs(args...))
+	return Error(tmpl, IdxArgs(args...))
 }
 
 func Error(tmpl string, args ArgsFunc) error {
 	s, err := String(tmpl, args)
-	if err != nil {
+	if err != nil && !errors.Is(err, ArgErrors{}) {
 		return fmt.Errorf("appending '%s': %w", s, err)
 	}
 	return errors.New(s)

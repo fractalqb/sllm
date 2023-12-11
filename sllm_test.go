@@ -2,6 +2,7 @@ package sllm
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -59,14 +60,6 @@ func ExamplePrint_explicitIndex() {
 	// `a:#0`, `b:#11`, `c:#1`, `d:#0`, `e:#2`
 }
 
-func ExamplePrint_argError() {
-	_, err := FprintIdx(os.Stdout, "`argok` but `notok`\n", 4711)
-	fmt.Println(err)
-	// Output:
-	// `argok:4711` but `notok!(missing argument 1'notok')`
-	// <nil>
-}
-
 const (
 	testTmpl = "`service`: Sent `signal` to main `process` (`name`) on client request `at`."
 	testSvc  = "rsyslog"
@@ -93,7 +86,7 @@ func testArgsN(to []byte, idx int, n string) ([]byte, error) {
 	case 4:
 		return testNow.AppendSllm(to), nil
 	}
-	return to, MissingArg{idx, n}
+	return to, errors.New("missing argument")
 }
 
 func BenchmarkSprintf(b *testing.B) {
@@ -127,7 +120,7 @@ func BenchmarkAppend_testArgsN(b *testing.B) {
 	}
 }
 
-func ExampleAppend_IdxArgs() {
+func ExampleAppend_idxArgs() {
 	args := IdxArgsDefault("???", testSvc, testSig, testProc, testName, testNow)
 	var buf []byte
 	buf, _ = Append(buf, testTmpl, args)
@@ -137,7 +130,7 @@ func ExampleAppend_IdxArgs() {
 	// `service:rsyslog`: Sent `signal:SIGHUP` to main `process:1611` (`name:rsyslogd`) on client request `at:11-27 Mo 21:30:00+00`.
 }
 
-func BenchmarkAppend_IdxArgs(b *testing.B) {
+func BenchmarkAppend_idxArgs(b *testing.B) {
 	args := IdxArgsDefault("???", testSvc, testSig, testProc, testName, testNow)
 	var buf []byte
 	outBytes = 0
@@ -160,7 +153,7 @@ func BenchmarkWrite_IdxArgs(b *testing.B) {
 	}
 }
 
-func ExampleAppend_NmArgs() {
+func ExampleAppend_nmArgs() {
 	args := NmArgs(map[string]any{
 		"service": testSvc,
 		"signal":  testSig,
@@ -176,7 +169,7 @@ func ExampleAppend_NmArgs() {
 	// `service:rsyslog`: Sent `signal:SIGHUP` to main `process:1611` (`name:rsyslogd`) on client request `at:11-27 Mo 21:30:00+00`.
 }
 
-func BenchmarkAppend_NmArgs(b *testing.B) {
+func BenchmarkAppend_nmArgs(b *testing.B) {
 	args := NmArgs(map[string]any{
 		"service": testSvc,
 		"signal":  testSig,
@@ -249,6 +242,26 @@ func TestAppend_errors(t *testing.T) {
 			t.Fatalf("unexpected error: %s", err)
 		}
 	})
+	t.Run("missing arg", func(t *testing.T) {
+		out, err := Append(nil, "foo `bar` baz", IdxArgs())
+		if s := err.Error(); s != "argument 0 'bar': missing argument 0 'bar'" {
+			t.Fatalf("unexpected error: %s", s)
+		}
+		if !bytes.Contains(out, []byte("`bar!(missing argument 0 'bar')`")) {
+			t.Fatalf("no missing argument in '%s'", string(out))
+		}
+	})
+	t.Run("arg error", func(t *testing.T) {
+		_, err := Append(nil, "foo `bar` baz", func(to []byte, i int, n string) ([]byte, error) {
+			return to, fmt.Errorf("arg %d '%s' error", i, n)
+		})
+		if err == nil {
+			t.Fatal("no error")
+		}
+		if err.Error() != "argument 0 'bar': arg 0 'bar' error" {
+			t.Fatalf("unexpected error '%s'", err)
+		}
+	})
 }
 
 func fuzzArgs[T any](t *testing.T, arg T) {
@@ -270,7 +283,7 @@ func fuzzArgs[T any](t *testing.T, arg T) {
 	}
 }
 
-func FuzzExpand_stringArgs(f *testing.F) {
+func FuzzAppend_stringArgs(f *testing.F) {
 	f.Add("thing")
 	f.Add("")
 	f.Add(" łäü")
@@ -278,7 +291,7 @@ func FuzzExpand_stringArgs(f *testing.F) {
 	f.Fuzz(func(t *testing.T, arg string) { fuzzArgs(t, arg) })
 }
 
-func FuzzExpand_intArgs(f *testing.F) {
+func FuzzAppend_intArgs(f *testing.F) {
 	f.Add(0)
 	f.Add(-1)
 	f.Add(1)

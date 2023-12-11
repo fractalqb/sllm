@@ -17,13 +17,13 @@ func Parameters(tmpl string, a []string) ([]string, error) {
 	return a, err
 }
 
-// Parse parses a sllm message create by Expand and calls onArg for every
+// Parse parses a sllm message create by Append and calls onArg for every
 // `name:value` parameter it finds in the message. When a non-nil buffer is
 // passed as tmpl Parse will also reconstruct the original template into the
 // buffer. Note that the template is appended to tmpl's content.
 func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string, argError bool) error) error {
 	for len(msg) > 0 {
-		idx := strings.IndexByte(msg, tmplEsc)
+		idx := strings.IndexByte(msg, tmplEscChar)
 		if idx < 0 {
 			if tmpl != nil {
 				tmpl.WriteString(msg)
@@ -37,7 +37,7 @@ func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string, argErr
 		switch {
 		case msg == "":
 			return errors.New("empty arg")
-		case msg[0] == tmplEsc:
+		case msg[0] == tmplEscChar:
 			msg = msg[1:]
 			continue
 		}
@@ -58,15 +58,15 @@ func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string, argErr
 		} else {
 			msg = msg[idx+1:]
 		}
-		idx = strings.IndexByte(msg, tmplEsc)
+		idx = strings.IndexByte(msg, tmplEscChar)
 		for {
 			if idx < 0 {
 				return fmt.Errorf("unterminated arg '%s'", name)
 			}
-			if idx+1 >= len(msg) || msg[idx+1] != tmplEsc {
+			if idx+1 >= len(msg) || msg[idx+1] != tmplEscChar {
 				break
 			}
-			nidx := strings.IndexByte(msg[idx+2:], tmplEsc)
+			nidx := strings.IndexByte(msg[idx+2:], tmplEscChar)
 			if nidx < 0 {
 				return nil
 			}
@@ -98,7 +98,7 @@ func Parse(msg string, tmpl *bytes.Buffer, onArg func(name, value string, argErr
 	return nil
 }
 
-var nameEnd = string([]byte{nameSep, argErr})
+var nameEnd = string([]byte{nameSepChar, argErrChar})
 
 // ParseMap uses Parse to create a map with all parameters assigned to an
 // argument in the passed message msg. ParseMap can also reconstruct the

@@ -127,13 +127,13 @@ func (tf TimeFormat) anyOn(flags TimeFormat) (res bool) {
 	return tf&flags != 0
 }
 
-func (tf TimeFormat) anyOff(flags TimeFormat) (res bool) {
-	return tf&flags != flags
-}
+// func (tf TimeFormat) anyOff(flags TimeFormat) (res bool) {
+// 	return tf&flags != flags
+// }
 
-func (tf TimeFormat) allOn(flags TimeFormat) (res bool) {
-	return tf&flags == flags
-}
+// func (tf TimeFormat) allOn(flags TimeFormat) (res bool) {
+// 	return tf&flags == flags
+// }
 
 func (tf TimeFormat) allOff(flags TimeFormat) (res bool) {
 	return tf&flags == 0

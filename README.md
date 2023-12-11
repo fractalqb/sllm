@@ -35,7 +35,7 @@ time, _sllm_ remains simple and unobtrusive—unlike XML or even JSON.
 
 Let's take the example of a standard log message that states some
 business relevant event and might be generated from the following
-pseudo-code:
+pseudocode:
 
 ```
 …
@@ -54,10 +54,10 @@ Besides the message the log entry contains some standard fields
 `time`, `thread`, `level` and `module` and some _Diagnostic Context_
 information to give a more complete picture.
 
-How would the output of such a scenario look like? – Either one gets
-a visually pleasant message that is rather good to read or you get
-output that is easy to be consumed by computers. Currently one has
-to make a choice. But, can't we have both in one?
+How would the output of such a scenario look like? – Either one gets a visually
+pleasant message that is rather good to read, or you get output that is easy to
+be consumed by computers. Currently, one has to make a choice. But, can't we
+have both in one?
 
 **Note** that _sllm_ focuses on the log message.  We do not propose how to
 handle other pieces of information! So lets have a look what _sllm_ would do
@@ -77,7 +77,7 @@ understanding from natural language. However, the relevant parameters—
 i.e. the number of items, which type of item and the respective
 user—is not easy to extract from the text by machines. Even if you do,
 simple changes of the text template can easily break the mechanism to
-extrac those parameters.
+extract those parameters.
 
 **With sllm message:**
 ```
@@ -95,8 +95,8 @@ time=2018-07-02T20:52:39 thread=main level=INFO module=sllm.Example ↩
 ```
 
 The [logftm page](https://www.brandur.org/logfmt#human) itself states
-that the human readability of logftm is far from perferct and encourages
-the approach to include a human readable message with every log line:
+that the human readability of logftm is far from perfect and encourages
+the approach to include a human-readable message with every log line:
 
 ```
 time=2018-07-02T20:52:39 thread=main level=INFO module=sllm.Example ↩
@@ -105,9 +105,9 @@ time=2018-07-02T20:52:39 thread=main level=INFO module=sllm.Example ↩
 ```
 
 Once you find the message by skimming the log entry its meaning is not
-subject of presonal interpretation of technical key/value pairs any
+subject of personal interpretation of technical key/value pairs any
 more. That's fine! But there is still a significant amount of “visual
-noise”. However the result is quite acceptable. But one still may ask
+noise”. However, the result is quite acceptable. But one still may ask
 if the redundancy in the log entry is necessary. With a “slim” message
 you don't need that redundancy.
 
@@ -147,7 +147,7 @@ The markup is simple and sticks to the following requirements:
 1. _No support for multi-line messages_
 
    Spreading a single log entry over multiple lines is considered a
-   bad practice. However there may be use cases, e.g. logging a stack
+   bad practice. However, there may be use cases, e.g. logging a stack
    trace, that justify the multi-line approach. But in any case the
    message of a log entry shall not exceed a single line!
    
@@ -164,13 +164,13 @@ The markup is simple and sticks to the following requirements:
    
 4. _Reliable and robust recognition of parameters and arguments_
 
-   The argument and the parameter can be uniquely recognised within a
+   The argument and the parameter can be uniquely recognized within a
    message. Changes of a message that do not affect neither the
    parameters nor the arguments do not break the recognition.
 
 5. _Be transparent, simple and unobtrusive_
 
-   A message shall be human readable so that the meaning of the
+   A message shall be human-readable so that the meaning of the
    message is easy to get. The system must be transparent in the sense
    that even the human reader can easily recognize the parameters with
    their arguments.
@@ -178,7 +178,7 @@ The markup is simple and sticks to the following requirements:
    _Note that the readability of a message also depends to a certain
    extent on its author._
 
-With this requirements, why was the backtick '`' chosen for markup? –
+With these requirements, why was the backtick '`' chosen for markup? –
 The backtick is a rarely used character from the ASCII characters set,
 i.e. it is also compatible with UTF-8. The fact that it is rarely used
 implies that we don't have to escape it often. This affects backticks
@@ -187,11 +187,10 @@ backticks are simply not allowed.
 
 And last but not least: Simpler markup rules make simpler software
 implementations ([as long as it is not too
-simple](https://en.wikiquote.org/wiki/Albert_Einstein#1930s)). Besides
-many advantages this gives room for efficient implementations. Part of
-this repository is a [Go
-implementation](https://godoc.org/github.com/fractalqb/sllm) that does
-not strive so much for efficiency but for hackability.
+simple](https://en.wikiquote.org/wiki/Albert_Einstein#1930s)). Besides many
+advantages this gives room for efficient implementations. Part of this
+repository is a [Go implementation](https://godoc.org/github.com/fractalqb/sllm)
+with quite decent performance.
 
 ## Benchmarks
 Benchmarks from https://github.com/fractalqb/go-sllm-benchmark – go there for
