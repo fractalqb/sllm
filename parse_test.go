@@ -6,8 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-
-	"git.fractalqb.de/fractalqb/catch/test"
 )
 
 func TestParameters(t *testing.T) {
@@ -51,7 +49,10 @@ func ExampleParseMap() {
 func TestParse(t *testing.T) {
 	t.Run("empty arg", func(t *testing.T) {
 		var tmpl bytes.Buffer
-		args := test.Err(ParseMap("there is no empty `` arg", &tmpl)).ShouldNot(t)
+		args, err := ParseMap("there is no empty `` arg", &tmpl)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if len(args) != 0 {
 			t.Errorf("found args: %v", args)
 		}
